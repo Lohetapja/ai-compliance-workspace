@@ -3,40 +3,124 @@
 A practical, browser-based workspace for organizing AI governance, risk,
 evidence, decisions, incidents, and audit-readiness information.
 
-Live site:
+**Live demo:** https://lohetapja.github.io/ai-compliance-workspace/
 
-**https://lohetapja.github.io/ai-compliance-workspace/**
+AI Compliance Workspace is not a legal compliance engine. It is a practical
+workspace for organizing AI governance, risk, evidence, decisions, incidents,
+and audit-readiness information.
 
-## What this project is
+## Purpose
 
-AI Compliance Workspace is a portfolio project for structuring AI governance
-work in one local-first interface. It helps a user document:
+AI compliance work is not only about knowing regulations. It is about creating
+structure: what systems exist, who owns them, what risks they create, what
+controls reduce those risks, what evidence exists, what decisions were made, and
+what needs review.
 
-- AI system inventory and ownership
-- risk classification notes and review flags
-- AI-specific risks and treatments
-- controls and supporting evidence
-- governance decisions
-- incidents and issues
-- framework mapping notes
-- Markdown reports and JSON workspace backups
+This project turns that structure into a local-first portfolio app. It helps a
+reviewer see how AI governance records can be connected without pretending to
+automate legal judgement.
 
 The bundled sample dataset is fictional: **Northstar AI Cloud**.
 
-## What this project is not
+## Important disclaimer
 
-AI Compliance Workspace is **not a legal compliance engine**. It does not provide
-legal advice, certify compliance, or guarantee compliance with the EU AI Act,
-ISO/IEC 42001, GDPR, NIS2, SOC 2, or any other framework.
+This project is **not legal advice** and does not certify or guarantee
+compliance with the EU AI Act, ISO/IEC 42001, GDPR, NIS2, SOC 2, or any other
+framework.
 
-It is a practical workspace for organizing governance records and review
-artifacts. Human legal, privacy, security, and governance review is still
-required.
+Risk bands, framework notes, evidence coverage, and reports are working review
+artifacts. They are designed to support human governance, legal, privacy, and
+security review.
 
 Do not enter real confidential, personal, customer, regulated, or sensitive
 company data into the public demo.
 
-## Why local-first
+## What problem it solves
+
+AI governance information often gets scattered across spreadsheets, documents,
+tickets, wiki pages, and risk registers. This project shows one way to keep the
+core review trail connected:
+
+- which AI systems exist
+- who owns them
+- why they are used
+- what risks they create
+- what controls reduce those risks
+- what evidence supports those controls
+- what decisions were made
+- what incidents or issues occurred
+- what still needs review
+
+## Features
+
+- Dashboard with portfolio, risk, review, and evidence coverage signals
+- AI Systems inventory with detail pages
+- Risk Helper for structured review questions and possible risk areas
+- AI Risk Register
+- Controls & Evidence workspace
+- Decision Journal
+- Incidents / Issues log
+- Framework Mapping notes
+- Markdown report preview and download
+- Single-system audit pack export
+- JSON import/export for local backups
+- Load/reset fictional sample data
+- Local browser storage only
+- Responsive layout for smaller screens
+
+## Example workflow
+
+1. Open the live demo.
+2. Review the **Dashboard** for portfolio status and open gaps.
+3. Open **AI Systems** and select a Northstar sample system.
+4. Review the system purpose, owner, risk band, review flags, and evidence
+   coverage.
+5. Open **Risk Helper** to see structured questions and recommended review
+   actions.
+6. Review linked **Risks**, **Controls & Evidence**, **Decisions**, and
+   **Incidents**.
+7. Open **Framework Mapping** to inspect high-level review notes.
+8. Open **Reports** to preview/download a Markdown report.
+9. Open **Settings / Data** to export JSON, import JSON, reset demo data, or
+   clear local data.
+
+## Modules
+
+| Module | Purpose |
+| --- | --- |
+| Dashboard | Summarizes review status, open risks, evidence coverage, and due dates. |
+| AI Systems | Tracks system purpose, ownership, model/provider context, data use, review flags, and status. |
+| Risk Helper | Structures assessment questions and suggests possible risk areas for human review. |
+| Risk Register | Records AI-specific risks, likelihood, impact, treatment, owner, controls, and evidence. |
+| Controls & Evidence | Connects controls to systems, risks, framework tags, and supporting evidence. |
+| Decision Journal | Captures governance decisions, rationale, reviewers, linked risks, and evidence. |
+| Incidents / Issues | Records AI-related incidents, impact, containment, root cause, and follow-up actions. |
+| Framework Mapping | Stores high-level notes by framework and requirement area. |
+| Reports | Generates Markdown working reports and single-system audit packs. |
+| Settings / Data | Manages sample data, JSON backup/restore, and local data clearing. |
+
+## Screenshots
+
+Screenshots are intentionally left as placeholders until final portfolio captures
+are added under `docs/screenshots/`.
+
+<!-- Screenshot to be added: Dashboard -->
+<!-- Screenshot to be added: AI System Inventory -->
+<!-- Screenshot to be added: AI System Detail -->
+<!-- Screenshot to be added: Risk Helper -->
+<!-- Screenshot to be added: Reports / Audit Pack -->
+<!-- Screenshot to be added: Framework Mapping -->
+
+Planned screenshot paths:
+
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/ai-systems.png`
+- `docs/screenshots/system-detail.png`
+- `docs/screenshots/risk-helper.png`
+- `docs/screenshots/reports-audit-pack.png`
+- `docs/screenshots/framework-mapping.png`
+
+## Data and privacy model
 
 The app runs entirely in the browser:
 
@@ -51,101 +135,18 @@ The app runs entirely in the browser:
 Workspace data is stored in browser `localStorage`. Export/import is file-based
 and user-controlled through JSON backups.
 
-## Current feature summary
+JSON exports can contain everything in the local workspace. Treat exported files
+as local records under your control.
 
-- Dashboard with AI portfolio, risk, review, and evidence coverage signals
-- AI Systems inventory with detail pages
-- Risk Helper for structured review questions and suggested risk bands
-- AI Risk Register
-- Controls & Evidence workspace
-- Decision Journal
-- Incidents / Issues log
-- Framework Mapping notes
-- Markdown report preview/download
-- JSON export/import
-- Reset/load fictional sample data
-- Responsive app shell for smaller screens
+## Evidence coverage
 
-## 60-second demo path
+Evidence Coverage is not a compliance score. It only shows how much of the
+recommended evidence checklist has been documented for the AI systems in the
+workspace.
 
-1. Open the live demo.
-2. Review the **Dashboard** for portfolio status and open gaps.
-3. Open **AI Systems** and select a Northstar sample system.
-4. Review linked risks, controls, evidence, decisions, and incidents.
-5. Open **Risk Helper** to see structured classification questions.
-6. Open **Risk Register** and **Controls & Evidence** to inspect linked records.
-7. Open **Framework Mapping** for high-level framework notes.
-8. Open **Reports** and preview/download a Markdown report.
-9. Open **Settings / Data** to export JSON, import JSON, reset demo data, or
-   clear local data.
-
-## Local development
-
-Requires Node.js 22+ with npm.
-
-```bash
-npm install
-npm run dev
-```
-
-## Production build and preview
-
-```bash
-npm run build
-npm run preview
-```
-
-The app uses Vite and is configured for the GitHub Pages project URL:
-
-```ts
-base: "/ai-compliance-workspace/"
-```
-
-Routing uses `HashRouter`, which is simple and reliable for GitHub Pages project
-hosting because routes live after `#` and do not require a custom SPA fallback.
-
-## GitHub Pages deployment
-
-Deployment is prepared through GitHub Actions:
-
-```text
-.github/workflows/deploy.yml
-```
-
-Manual GitHub setting to verify:
-
-```text
-Repository → Settings → Pages → Build and deployment → Source → GitHub Actions
-```
-
-After pushing to `main`, check:
-
-```text
-Repository → Actions → Deploy AI Compliance Workspace to GitHub Pages
-```
-
-If the workflow has not been renamed, the Actions entry may appear as:
-
-```text
-Deploy to GitHub Pages
-```
-
-Expected live URL:
-
-```text
-https://lohetapja.github.io/ai-compliance-workspace/
-```
-
-## Data safety and demo boundaries
-
-- Sample data is fictional and uses the made-up organization **Northstar AI
-  Cloud**.
-- Do not import or type real sensitive investigation, legal, customer, personal,
-  regulated, or confidential business data into a public/shared browser.
-- Markdown reports are working review artifacts, not legal opinions or
-  certifications.
-- JSON export files may contain everything in your browser workspace. Treat them
-  as local files under your control.
+Low or partial coverage in the fictional sample data is intentional. It makes
+the demo show realistic gaps, review needs, and work-in-progress governance
+records.
 
 ## Tech stack
 
@@ -157,7 +158,105 @@ https://lohetapja.github.io/ai-compliance-workspace/
 - Zustand with browser `localStorage`
 - GitHub Pages + GitHub Actions
 
-## Project status
+## Run locally
 
-Built and locally verified as a frontend-only portfolio project. The next step is
-GitHub Pages deployment review and manual publish.
+Requires Node.js 22+ with npm.
+
+```bash
+npm install
+npm run dev
+```
+
+## Build locally
+
+```bash
+npm run build
+npm run preview
+```
+
+The app is configured for the GitHub Pages project URL:
+
+```ts
+base: "/ai-compliance-workspace/"
+```
+
+Routing uses `HashRouter`, which is simple and reliable for GitHub Pages project
+hosting because routes live after `#` and do not require a custom SPA fallback.
+
+## Deploy to GitHub Pages
+
+Deployment is prepared through GitHub Actions:
+
+```text
+.github/workflows/deploy.yml
+```
+
+Manual GitHub setting to verify:
+
+```text
+Repository -> Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
+```
+
+After pushing to `main`, check:
+
+```text
+Repository -> Actions -> Deploy to GitHub Pages
+```
+
+Expected live URL:
+
+```text
+https://lohetapja.github.io/ai-compliance-workspace/
+```
+
+## Limitations
+
+- This is a portfolio project, not a production GRC platform.
+- No backend, authentication, multi-user workflow, approval workflow, or audit
+  log service.
+- No legal determination or framework certification.
+- No live integrations with GRC, SIEM, ticketing, cloud, identity, model
+  registry, or document systems.
+- Data is per-browser unless exported/imported manually.
+- Risk Helper output is indicative and should be reviewed by qualified humans.
+
+## Portfolio value
+
+This project demonstrates:
+
+- structured AI governance thinking
+- cautious compliance wording
+- local-first data handling
+- AI risk and evidence relationships
+- Markdown report generation
+- GitHub Pages deployment for a TypeScript React app
+- practical UI for governance, risk, evidence, decisions, and incidents
+
+## Roadmap
+
+Near-term polish:
+
+- Add real screenshots to the README.
+- Continue mobile usability checks.
+- Add more guided empty states and examples.
+- Add focused tests for pure report/risk helper logic.
+- Refine import validation and backup messaging.
+
+## Future ideas
+
+These are intentionally not part of the current local-first portfolio demo:
+
+- optional static read-only export
+- richer framework mapping templates
+- per-system evidence checklist customization
+- accessibility audit
+- optional backend only if the local workflow is proven useful
+
+Not planned for the public demo:
+
+- legal advice automation
+- automatic compliance certification
+- AI API calls
+- OAuth/API-key storage
+- live GRC/SIEM/ticketing integrations
+- real customer data handling

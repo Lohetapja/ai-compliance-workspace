@@ -26,8 +26,8 @@ jobs:
           cache: npm
       # Configures GitHub Pages and, when account/org policy allows, enables it
       # automatically so the deploy step does not 404 on a repo that has never
-      # had Pages turned on. If auto-enable is blocked, set Settings → Pages →
-      # Source → "GitHub Actions" once, then re-run.
+      # had Pages turned on. If auto-enable is blocked, set Settings -> Pages ->
+      # Source -> "GitHub Actions" once, then re-run.
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:

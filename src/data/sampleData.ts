@@ -227,7 +227,7 @@ export function sampleWorkspace(): WorkspaceData {
       openSourceOrCommercial: 'in-house',
       deploymentEnvironment: 'Edge + control plane (EU production)',
       deploymentRegion: 'EU (multi-region)',
-      dataUsed: 'Request metadata, API keys, usage records',
+      dataUsed: 'Request metadata, API key identifiers, usage records',
       personalDataInvolved: 'yes',
       sensitiveDataInvolved: 'no',
       dataSources: 'API traffic, billing system',
