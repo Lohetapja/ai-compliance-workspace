@@ -74,6 +74,31 @@ export function AboutProjectPage() {
       </div>
 
       <Card className="mt-4">
+        <CardHeader title="How this differs from enterprise tools" subtitle="Scope is intentionally narrow and local-first." />
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+          <div>
+            <div className="label">This project intentionally does not include</div>
+            <ul className="space-y-1 text-xs leading-relaxed text-muted">
+              <li>• Auto-discovery of AI systems</li>
+              <li>• Runtime telemetry ingestion</li>
+              <li>• Continuous model monitoring</li>
+              <li>• Policy enforcement</li>
+              <li>• Enterprise integrations</li>
+              <li>• Authentication / authorization</li>
+              <li>• Real audit certification</li>
+              <li>• Legal compliance determination</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border border-border bg-panel-2 p-3 text-xs leading-relaxed text-muted">
+            It is a local-first portfolio project focused on <span className="text-ink">structure, workflow,
+            evidence, and learning</span>. The goal is to show how AI governance records connect — what systems
+            exist, who owns them, what risks they create, what controls and evidence support them, and what
+            needs review — without pretending to automate legal or security judgement.
+          </div>
+        </div>
+      </Card>
+
+      <Card className="mt-4">
         <CardHeader title="Recommended workflow" subtitle="A simple governance loop for a fictional or sanitized AI system." />
         <div className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-5">
           {workflow.map((step, i) => (
@@ -129,7 +154,9 @@ export function AboutProjectPage() {
       <div className="mt-5 flex flex-wrap gap-2">
         <Link to="/dashboard"><Button variant="primary"><Icon name="dashboard" size={14} /> View dashboard</Button></Link>
         <Link to="/systems"><Button variant="secondary"><Icon name="systems" size={14} /> Open AI systems</Button></Link>
+        <Link to="/framework-lenses"><Button variant="secondary"><Icon name="layers" size={14} /> Framework lenses</Button></Link>
         <Link to="/reports"><Button variant="secondary"><Icon name="report" size={14} /> Open reports</Button></Link>
+        <Link to="/research"><Button variant="ghost"><Icon name="book" size={14} /> Research sources</Button></Link>
       </div>
     </>
   );

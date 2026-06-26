@@ -3,6 +3,8 @@ import {
   EVIDENCE_STATUS_LABELS,
   GAP_ACTION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
+  INTAKE_STATUS_LABELS,
+  REVIEW_STATUS_LABELS,
   RISK_CATEGORY_LABELS,
   RISK_STATUS_LABELS,
   SYSTEM_STATUS_LABELS,
@@ -10,12 +12,16 @@ import {
   type EvidenceStatus,
   type GapActionStatus,
   type IncidentStatus,
+  type IntakeStatus,
+  type ReviewStatus,
   type RiskCategory,
+  type RiskLevel,
   type RiskStatus,
   type Severity,
   type SystemStatus,
 } from '../../types';
 import { REVIEW_STATE_LABELS, type ReviewState } from '../../lib/dates';
+import { FRESHNESS_LABELS, type Freshness } from '../../lib/freshness';
 import { Chip, type Tone } from './Chip';
 
 const SYSTEM_STATUS_TONE: Record<SystemStatus, Tone> = {
@@ -123,3 +129,49 @@ export const ReviewChip = ({ state }: { state: ReviewState }) =>
   state === 'none' ? null : (
     <Chip tone={REVIEW_TONE[state]}>{REVIEW_STATE_LABELS[state]}</Chip>
   );
+
+const INTAKE_STATUS_TONE: Record<IntakeStatus, Tone> = {
+  draft: 'neutral',
+  submitted: 'info',
+  'needs-security-review': 'warn',
+  'needs-privacy-review': 'warn',
+  'needs-legal-review': 'warn',
+  'needs-product-review': 'warn',
+  'approved-pilot': 'brand',
+  'approved-production': 'ok',
+  rejected: 'danger',
+  paused: 'neutral',
+};
+
+const REVIEW_STATUS_TONE: Record<ReviewStatus, Tone> = {
+  'not-started': 'danger',
+  'in-progress': 'warn',
+  complete: 'ok',
+  'not-required': 'neutral',
+};
+
+const RISK_LEVEL_TONE: Record<RiskLevel, Tone> = {
+  low: 'ok',
+  medium: 'warn',
+  high: 'danger',
+};
+
+const FRESHNESS_TONE: Record<Freshness, Tone> = {
+  fresh: 'ok',
+  'due-soon': 'warn',
+  expired: 'danger',
+  'missing-review-date': 'neutral',
+};
+
+export const IntakeStatusChip = ({ value }: { value: IntakeStatus }) => (
+  <Chip tone={INTAKE_STATUS_TONE[value]}>{INTAKE_STATUS_LABELS[value]}</Chip>
+);
+export const ReviewStatusChip = ({ value }: { value: ReviewStatus }) => (
+  <Chip tone={REVIEW_STATUS_TONE[value]}>{REVIEW_STATUS_LABELS[value]}</Chip>
+);
+export const RiskLevelChip = ({ value }: { value: RiskLevel }) => (
+  <Chip tone={RISK_LEVEL_TONE[value]}>{value}</Chip>
+);
+export const FreshnessChip = ({ value }: { value: Freshness }) => (
+  <Chip tone={FRESHNESS_TONE[value]}>{FRESHNESS_LABELS[value]}</Chip>
+);

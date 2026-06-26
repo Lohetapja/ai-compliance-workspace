@@ -333,6 +333,15 @@ export interface AISystem {
   frameworkTags: FrameworkId[];
   /** Persisted output of the most recent Risk Classification Helper run. */
   classification?: ClassificationResult;
+  // GDPR-relevant fields (optional; used by the GDPR lens). All non-legal.
+  dataSubjects?: string;
+  personalDataCategories?: string;
+  retentionPeriod?: string;
+  recipientsOrVendors?: string;
+  internationalTransferFlag?: boolean;
+  automatedDecisionConcern?: boolean;
+  dpiaNeeded?: boolean;
+  dpiaStatus?: ReviewStatus;
   notes: string;
   createdAt: ISODate;
   updatedAt: ISODate;
@@ -497,6 +506,108 @@ export interface FrameworkNote {
 }
 
 /* ------------------------------------------------------------------ */
+/* Shared review-status vocabulary (used by vendors, DPIA, etc.)       */
+/* ------------------------------------------------------------------ */
+
+export type ReviewStatus =
+  | 'not-started'
+  | 'in-progress'
+  | 'complete'
+  | 'not-required';
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  'not-started': 'Not Started',
+  'in-progress': 'In Progress',
+  complete: 'Complete',
+  'not-required': 'Not Required',
+};
+
+/* ------------------------------------------------------------------ */
+/* AI Use Case Intake                                                  */
+/* ------------------------------------------------------------------ */
+
+export type IntakeStatus =
+  | 'draft'
+  | 'submitted'
+  | 'needs-security-review'
+  | 'needs-privacy-review'
+  | 'needs-legal-review'
+  | 'needs-product-review'
+  | 'approved-pilot'
+  | 'approved-production'
+  | 'rejected'
+  | 'paused';
+
+export const INTAKE_STATUS_LABELS: Record<IntakeStatus, string> = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  'needs-security-review': 'Needs Security Review',
+  'needs-privacy-review': 'Needs Privacy Review',
+  'needs-legal-review': 'Needs Legal Review',
+  'needs-product-review': 'Needs Product Review',
+  'approved-pilot': 'Approved for Pilot',
+  'approved-production': 'Approved for Production',
+  rejected: 'Rejected',
+  paused: 'Paused',
+};
+
+export interface UseCaseIntake {
+  id: ID;
+  requestTitle: string;
+  requester: string;
+  businessUnit: string;
+  businessPurpose: string;
+  intendedUsers: string;
+  useType: 'internal' | 'external' | 'both' | 'customer-facing' | 'unknown';
+  dataInvolved: string;
+  personalData: Tri;
+  sensitiveData: Tri;
+  vendorOrProvider: string;
+  autonomyLevel: AutonomyLevel;
+  expectedImpact: string;
+  possibleHighRiskContext: Tri;
+  securityReviewNeeded: boolean;
+  privacyReviewNeeded: boolean;
+  legalReviewNeeded: boolean;
+  targetGoLiveDate: ISODate | '';
+  status: IntakeStatus;
+  notes: string;
+  /** Set once converted into an AISystem record. */
+  convertedSystemId?: ID;
+  createdAt: ISODate;
+  updatedAt: ISODate;
+}
+
+/* ------------------------------------------------------------------ */
+/* Vendor Register                                                     */
+/* ------------------------------------------------------------------ */
+
+export type RiskLevel = 'low' | 'medium' | 'high';
+
+export interface Vendor {
+  id: ID;
+  vendorName: string;
+  serviceType: string;
+  linkedAISystemIds: ID[];
+  dataShared: string;
+  personalDataShared: Tri;
+  sensitiveDataShared: Tri;
+  region: string;
+  contractReviewStatus: ReviewStatus;
+  privacyReviewStatus: ReviewStatus;
+  securityReviewStatus: ReviewStatus;
+  dpaStatus: ReviewStatus;
+  subprocessorsKnown: Tri;
+  exitRisk: RiskLevel;
+  vendorDependencyRisk: RiskLevel;
+  reviewDate: ISODate | '';
+  owner: string;
+  notes: string;
+  createdAt: ISODate;
+  updatedAt: ISODate;
+}
+
+/* ------------------------------------------------------------------ */
 /* Whole-workspace document (this is what gets exported/imported)      */
 /* ------------------------------------------------------------------ */
 
@@ -508,6 +619,8 @@ export interface WorkspaceData {
   decisions: Decision[];
   incidents: Incident[];
   gapActions: GapAction[];
+  useCases: UseCaseIntake[];
+  vendors: Vendor[];
   frameworkNotes: FrameworkNote[];
   organizationName: string;
 }

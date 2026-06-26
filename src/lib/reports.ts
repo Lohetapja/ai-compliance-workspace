@@ -6,6 +6,14 @@ import {
 import { formatDate, relativeReview } from './dates';
 import { systemCoverage, systemGaps, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
 import { dashboardStats, reviewItems } from './selectors';
+import {
+  aiActBuckets,
+  auditEvidenceBuckets,
+  gdprSystems,
+  iso42001Areas,
+  nis2Rows,
+  securityRelevantRisks,
+} from './lenses';
 import { HELPER_DISCLAIMER } from './riskHelper';
 
 const DISCLAIMER =
@@ -409,6 +417,82 @@ export function singleSystemAuditPack(data: WorkspaceData, system: AISystem): st
   return out;
 }
 
+/* ------------------------------------------------------------------ */
+/* 8. Framework Lens Summary Report                                    */
+/* ------------------------------------------------------------------ */
+
+export function frameworkLensSummaryReport(data: WorkspaceData): string {
+  let out = h('Framework Lens Summary Report') + meta(data, 'Framework Lens Summary Report') + '\n';
+  out +=
+    '> These are high-level organizational views, not legal advice, certification, or a final ' +
+    'compliance determination. They do not reproduce official framework text.\n\n';
+
+  out += h('1. AI Act-relevant review areas', 2);
+  out += table(
+    ['Review area', 'Systems'],
+    aiActBuckets(data).map((b) => [b.label, b.systems.map((s) => s.systemName).join(', ') || '—'])
+  );
+
+  out += '\n' + h('2. ISO/IEC 42001-inspired governance areas', 2);
+  out += table(
+    ['Area', 'Controls', 'Evidence', 'Open gaps', 'Status'],
+    iso42001Areas(data).map((a) => [
+      a.key,
+      String(a.controls.length),
+      String(a.evidence.length),
+      String(a.gapCount),
+      a.status,
+    ])
+  );
+
+  out += '\n' + h('3. GDPR-relevant privacy areas', 2);
+  out += table(
+    ['System', 'Personal', 'Sensitive', 'DPIA', 'Automated decision'],
+    gdprSystems(data).map((s) => [
+      s.systemName,
+      s.personalDataInvolved,
+      s.sensitiveDataInvolved,
+      s.dpiaStatus ?? '—',
+      s.automatedDecisionConcern ? 'concern' : 'no',
+    ])
+  );
+
+  out += '\n' + h('4. NIS2-relevant cybersecurity areas', 2);
+  out += table(
+    ['System', 'Flags'],
+    nis2Rows(data).map((r) => [r.system.systemName, r.flags.join(', ')])
+  );
+
+  out += '\n' + h('5. AI security risks', 2);
+  out += table(
+    ['Risk', 'System', 'Severity', 'Status'],
+    securityRelevantRisks(data).map((r) => [
+      r.riskTitle,
+      data.systems.find((s) => s.id === r.affectedAISystemId)?.systemName ?? '—',
+      r.severity,
+      r.status,
+    ])
+  );
+
+  out += '\n' + h('6. Audit evidence gaps', 2);
+  const buckets = auditEvidenceBuckets(data);
+  out += list([
+    `Missing / no review date: **${buckets.missing.length}**`,
+    `Expired: **${buckets.expired.length}**`,
+    `Due soon: **${buckets.dueSoon.length}**`,
+    `Fresh: **${buckets.fresh.length}**`,
+  ]);
+  out += '\n' + h('Evidence needing attention', 3);
+  out += table(
+    ['Evidence', 'Type', 'Owner', 'Status'],
+    [...buckets.missing, ...buckets.expired].map((e) => [e.evidenceTitle, e.evidenceType, e.owner || '—', e.status])
+  );
+
+  out += '\n' + h('7. Disclaimer', 2);
+  out += `${DISCLAIMER}\n`;
+  return out;
+}
+
 export interface ReportDef {
   id: string;
   title: string;
@@ -452,5 +536,11 @@ export const REPORTS: ReportDef[] = [
     title: 'Management Overview',
     description: 'Leadership summary of portfolio status, risk, evidence, incidents, and priority gaps.',
     generate: managementOverviewReport,
+  },
+  {
+    id: 'framework-lens-summary',
+    title: 'Framework Lens Summary',
+    description: 'AI Act, ISO 42001, GDPR, NIS2, AI security, and audit-evidence views in one summary.',
+    generate: frameworkLensSummaryReport,
   },
 ];

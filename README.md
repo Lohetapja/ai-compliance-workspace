@@ -66,10 +66,17 @@ core review trail connected:
 - Controls & Evidence workspace
 - Decision Journal
 - Incidents / Issues log
+- Gap Actions (turn review warnings into owned follow-up tasks)
+- **Framework Lenses** — AI Act, ISO 42001, GDPR, NIS2, AI Security, and Audit Evidence views over the same data
+- **Use Case Intake** — lightweight intake/triage for proposed AI use cases, convertible into an AI System record
+- **Vendor Register** — third-party AI providers with contract/privacy/security/DPA review status and dependency risk
+- **Traceability chain** on each AI system (System → Risks → Controls → Evidence → Decisions → Incidents → Reports)
+- **Evidence freshness** (Fresh / Due Soon / Expired / Missing Review Date) based on review dates
 - Framework Mapping notes
-- Markdown report preview and download
+- **Research Sources** page (high-level learning references with a verify-with-professionals disclaimer)
+- Markdown report preview and download, including a **Framework Lens Summary Report**
 - Single-system audit pack export
-- JSON import/export for local backups
+- JSON import/export for local backups (includes use cases and vendors)
 - Load/reset fictional sample data
 - Local browser storage only
 - Responsive layout for smaller screens
@@ -101,9 +108,21 @@ core review trail connected:
 | Controls & Evidence | Connects controls to systems, risks, framework tags, and supporting evidence. |
 | Decision Journal | Captures governance decisions, rationale, reviewers, linked risks, and evidence. |
 | Incidents / Issues | Records AI-related incidents, impact, containment, root cause, and follow-up actions. |
+| Gap Actions | Tracks missing-evidence/review follow-up tasks with owner, severity, due date, and status. |
+| Use Case Intake | Captures proposed AI use cases and the reviews they need; approved intakes convert into AI systems. |
+| Vendor Register | Tracks third-party AI providers, data shared, review statuses, and dependency/exit risk. |
+| Framework Lenses | High-level AI Act / ISO 42001 / GDPR / NIS2 / AI Security / Audit Evidence views — indicative only. |
 | Framework Mapping | Stores high-level notes by framework and requirement area. |
-| Reports | Generates Markdown working reports and single-system audit packs. |
+| Research Sources | Plain-language pointers to learning references (EU AI Act, ISO 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
+| Reports | Generates Markdown working reports, a Framework Lens Summary, and single-system audit packs. |
 | Settings / Data | Manages sample data, JSON backup/restore, and local data clearing. |
+
+### How this differs from enterprise tools
+
+This project intentionally does **not** include: auto-discovery of AI systems, runtime telemetry
+ingestion, continuous model monitoring, policy enforcement, enterprise integrations,
+authentication/authorization, real audit certification, or legal compliance determination. It is a
+local-first portfolio project focused on structure, workflow, evidence, and learning.
 
 ## Screenshots
 

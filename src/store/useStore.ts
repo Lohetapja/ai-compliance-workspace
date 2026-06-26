@@ -11,12 +11,15 @@ import type {
   GapAction,
   Incident,
   RequirementArea,
+  UseCaseIntake,
+  Vendor,
   WorkspaceData,
   WorkspaceExport,
 } from '../types';
 import { emptyWorkspace } from '../data/empty';
 import { newId, nowISO } from '../lib/id';
 import { sampleWorkspace } from '../data/sampleData';
+import { systemFromUseCase } from '../data/factories';
 
 const STORAGE_KEY = 'ai-compliance-workspace:v1';
 const EXPORT_VERSION = 1;
@@ -58,6 +61,15 @@ interface StoreState {
   upsertGapAction: (g: GapAction) => void;
   patchGapAction: (id: string, patch: Partial<GapAction>) => void;
   removeGapAction: (id: string) => void;
+
+  upsertUseCase: (u: UseCaseIntake) => void;
+  patchUseCase: (id: string, patch: Partial<UseCaseIntake>) => void;
+  removeUseCase: (id: string) => void;
+  convertUseCaseToSystem: (id: string) => string | null;
+
+  upsertVendor: (v: Vendor) => void;
+  patchVendor: (id: string, patch: Partial<Vendor>) => void;
+  removeVendor: (id: string) => void;
 
   upsertFrameworkNote: (
     framework: FrameworkId,
@@ -144,6 +156,13 @@ export const useStore = create<StoreState>()(
               ),
               gapActions: (data.gapActions ?? []).map((g) =>
                 g.affectedAISystemId === id ? { ...g, affectedAISystemId: '' } : g
+              ),
+              vendors: (data.vendors ?? []).map((v) => ({
+                ...v,
+                linkedAISystemIds: v.linkedAISystemIds.filter((x) => x !== id),
+              })),
+              useCases: (data.useCases ?? []).map((u) =>
+                u.convertedSystemId === id ? { ...u, convertedSystemId: undefined } : u
               ),
             },
             lastSaved: nowISO(),
@@ -329,6 +348,54 @@ export const useStore = create<StoreState>()(
       removeGapAction: (id) =>
         set((s) => ({
           data: { ...s.data, gapActions: (s.data.gapActions ?? []).filter((x) => x.id !== id) },
+          lastSaved: nowISO(),
+        })),
+
+      /* ---- use case intake ---- */
+      upsertUseCase: (u) =>
+        set((s) => ({
+          data: { ...s.data, useCases: upsert(s.data.useCases ?? [], touch(u)) },
+          lastSaved: nowISO(),
+        })),
+      patchUseCase: (id, p) =>
+        set((s) => ({
+          data: { ...s.data, useCases: patch(s.data.useCases ?? [], id, p) },
+          lastSaved: nowISO(),
+        })),
+      removeUseCase: (id) =>
+        set((s) => ({
+          data: { ...s.data, useCases: (s.data.useCases ?? []).filter((x) => x.id !== id) },
+          lastSaved: nowISO(),
+        })),
+      convertUseCaseToSystem: (id) => {
+        const uc = (get().data.useCases ?? []).find((x) => x.id === id);
+        if (!uc) return null;
+        const sys = systemFromUseCase(uc);
+        set((s) => ({
+          data: {
+            ...s.data,
+            systems: [...s.data.systems, sys],
+            useCases: patch(s.data.useCases ?? [], id, { convertedSystemId: sys.id }),
+          },
+          lastSaved: nowISO(),
+        }));
+        return sys.id;
+      },
+
+      /* ---- vendors ---- */
+      upsertVendor: (v) =>
+        set((s) => ({
+          data: { ...s.data, vendors: upsert(s.data.vendors ?? [], touch(v)) },
+          lastSaved: nowISO(),
+        })),
+      patchVendor: (id, p) =>
+        set((s) => ({
+          data: { ...s.data, vendors: patch(s.data.vendors ?? [], id, p) },
+          lastSaved: nowISO(),
+        })),
+      removeVendor: (id) =>
+        set((s) => ({
+          data: { ...s.data, vendors: (s.data.vendors ?? []).filter((x) => x.id !== id) },
           lastSaved: nowISO(),
         })),
 

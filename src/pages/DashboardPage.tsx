@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { dashboardStats, reviewItems, systemsNeedingAttention } from '../lib/selectors';
+import { lensCounts } from '../lib/lenses';
 import { RISK_CATEGORY_LABELS, type RiskCategory } from '../types';
 import { PageHeader } from '../components/ui/PageHeader';
 import { StatCard } from '../components/ui/StatCard';
 import { Card, CardHeader } from '../components/ui/Card';
+import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { CoverageMeter } from '../components/ui/CoverageMeter';
@@ -24,6 +26,7 @@ export function DashboardPage() {
   const data = useStore((s) => s.data);
   const loadSampleData = useStore((s) => s.loadSampleData);
   const stats = dashboardStats(data);
+  const lens = lensCounts(data);
   const reviews = reviewItems(data);
   const attention = reviews.filter((r) => r.state === 'overdue' || r.state === 'due-7').slice(0, 8);
   const attentionSystems = systemsNeedingAttention(data);
@@ -121,6 +124,32 @@ export function DashboardPage() {
         <StatCard label="With personal data" value={stats.withPersonalData} tone="warn" to="/systems" />
         <StatCard label="With sensitive data" value={stats.withSensitiveData} tone={stats.withSensitiveData ? 'danger' : 'neutral'} to="/systems" />
       </div>
+
+      {/* Governance views & workflow */}
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Vendor reviews pending" value={lens.vendorReviewsPending} tone={lens.vendorReviewsPending ? 'warn' : 'ok'} icon="box" to="/vendors" />
+        <StatCard label="Intake requests pending" value={lens.intakePending} tone={lens.intakePending ? 'info' : 'neutral'} icon="inbox" to="/use-cases" />
+        <StatCard label="Expired evidence" value={lens.expiredEvidence} tone={lens.expiredEvidence ? 'danger' : 'ok'} to="/framework-lenses" />
+        <StatCard label="Evidence due soon" value={lens.evidenceDueSoon} tone={lens.evidenceDueSoon ? 'warn' : 'ok'} to="/framework-lenses" />
+      </div>
+
+      <Card className="mt-5">
+        <CardHeader title="Framework lenses" subtitle="View the same data through governance angles — indicative only, not compliance determinations" actions={<Link to="/framework-lenses" className="text-xs text-brand hover:underline">Open →</Link>} />
+        <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-5">
+          {[
+            { label: 'AI Act View', to: '/framework-lenses', hint: `${lens.aiActReviewAreas} review area(s)`, icon: 'layers' as const },
+            { label: 'GDPR View', to: '/framework-lenses', hint: `${lens.gdprSystems} system(s)`, icon: 'shield' as const },
+            { label: 'ISO 42001 View', to: '/framework-lenses', hint: 'management areas', icon: 'framework' as const },
+            { label: 'NIS2 View', to: '/framework-lenses', hint: 'security evidence', icon: 'controls' as const },
+            { label: 'AI Security View', to: '/framework-lenses', hint: `${lens.securityRisks} open risk(s)`, icon: 'risk' as const },
+          ].map((v) => (
+            <Link key={v.label} to={v.to} className="rounded-lg border border-border bg-panel-2 p-3 hover:border-border-strong hover:bg-elevated">
+              <div className="flex items-center gap-1.5 text-sm font-medium text-ink"><Icon name={v.icon} size={14} className="text-brand" /> {v.label}</div>
+              <div className="mt-1 text-xs text-faint">{v.hint}</div>
+            </Link>
+          ))}
+        </div>
+      </Card>
 
       {/* Middle row */}
       <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">

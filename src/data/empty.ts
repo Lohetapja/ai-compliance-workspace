@@ -9,6 +9,8 @@ export function emptyWorkspace(): WorkspaceData {
     decisions: [],
     incidents: [],
     gapActions: [],
+    useCases: [],
+    vendors: [],
     frameworkNotes: [],
     organizationName: 'Fictional AI Test Company',
   };

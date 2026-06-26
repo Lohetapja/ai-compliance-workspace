@@ -6,6 +6,8 @@ import type {
   Evidence,
   GapAction,
   Incident,
+  UseCaseIntake,
+  Vendor,
 } from '../types';
 import { computeSeverity } from '../lib/severity';
 import { newId, nowISO } from '../lib/id';
@@ -55,6 +57,14 @@ export function blankSystem(): AISystem {
     nextReviewDate: '',
     lastReviewDate: '',
     frameworkTags: [],
+    dataSubjects: '',
+    personalDataCategories: '',
+    retentionPeriod: '',
+    recipientsOrVendors: '',
+    internationalTransferFlag: false,
+    automatedDecisionConcern: false,
+    dpiaNeeded: false,
+    dpiaStatus: 'not-started',
     notes: '',
     createdAt: ts,
     updatedAt: ts,
@@ -194,5 +204,90 @@ export function blankIncident(systemId = ''): Incident {
     reviewDate: '',
     createdAt: ts,
     updatedAt: ts,
+  };
+}
+
+export function blankUseCase(): UseCaseIntake {
+  const ts = nowISO();
+  return {
+    id: newId('uc'),
+    requestTitle: '',
+    requester: '',
+    businessUnit: '',
+    businessPurpose: '',
+    intendedUsers: '',
+    useType: 'internal',
+    dataInvolved: '',
+    personalData: 'unknown',
+    sensitiveData: 'unknown',
+    vendorOrProvider: '',
+    autonomyLevel: 'advisory',
+    expectedImpact: '',
+    possibleHighRiskContext: 'unknown',
+    securityReviewNeeded: false,
+    privacyReviewNeeded: false,
+    legalReviewNeeded: false,
+    targetGoLiveDate: '',
+    status: 'draft',
+    notes: '',
+    createdAt: ts,
+    updatedAt: ts,
+  };
+}
+
+export function blankVendor(): Vendor {
+  const ts = nowISO();
+  return {
+    id: newId('ven'),
+    vendorName: '',
+    serviceType: '',
+    linkedAISystemIds: [],
+    dataShared: '',
+    personalDataShared: 'unknown',
+    sensitiveDataShared: 'unknown',
+    region: '',
+    contractReviewStatus: 'not-started',
+    privacyReviewStatus: 'not-started',
+    securityReviewStatus: 'not-started',
+    dpaStatus: 'not-started',
+    subprocessorsKnown: 'unknown',
+    exitRisk: 'medium',
+    vendorDependencyRisk: 'medium',
+    reviewDate: '',
+    owner: '',
+    notes: '',
+    createdAt: ts,
+    updatedAt: ts,
+  };
+}
+
+/** Map an approved intake request into a draft AI System record. */
+export function systemFromUseCase(uc: UseCaseIntake): AISystem {
+  const base = blankSystem();
+  const customerFacing = uc.useType === 'customer-facing';
+  const use: AISystem['internalOrExternalUse'] =
+    uc.useType === 'customer-facing' ? 'external' : uc.useType;
+  return {
+    ...base,
+    systemName: uc.requestTitle || 'Untitled system',
+    description: uc.expectedImpact || uc.businessPurpose,
+    businessPurpose: uc.businessPurpose,
+    owner: uc.requester,
+    businessUnit: uc.businessUnit,
+    userGroups: uc.intendedUsers,
+    internalOrExternalUse: use,
+    customerFacing,
+    vendorOrProvider: uc.vendorOrProvider,
+    dataUsed: uc.dataInvolved,
+    personalDataInvolved: uc.personalData,
+    sensitiveDataInvolved: uc.sensitiveData,
+    autonomyLevel: uc.autonomyLevel,
+    currentStatus: 'in-review',
+    riskCategory: uc.possibleHighRiskContext === 'yes' ? 'high-review-needed' : 'unassessed',
+    legalReviewNeeded: uc.legalReviewNeeded,
+    privacyReviewNeeded: uc.privacyReviewNeeded,
+    securityReviewNeeded: uc.securityReviewNeeded,
+    nextReviewDate: uc.targetGoLiveDate,
+    notes: `Converted from intake request "${uc.requestTitle}".${uc.notes ? ' ' + uc.notes : ''}`,
   };
 }

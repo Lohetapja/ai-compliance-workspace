@@ -15,7 +15,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
 import { Card, CardHeader } from '../components/ui/Card';
-import { Chip } from '../components/ui/Chip';
+import { Chip, type Tone } from '../components/ui/Chip';
 import { CoverageMeter } from '../components/ui/CoverageMeter';
 import { InfoTip } from '../components/ui/Tooltip';
 import {
@@ -101,6 +101,19 @@ function Row({ onClick, children }: { onClick: () => void; children: React.React
       {children}
     </button>
   );
+}
+
+function TraceStep({ label, count, tone }: { label: string; count: number; tone: Tone }) {
+  return (
+    <span className="inline-flex flex-col items-center rounded-lg border border-border bg-panel-2 px-2.5 py-1.5">
+      <span className="text-xs font-medium text-ink">{label}</span>
+      <Chip tone={tone} className="mt-0.5">{count}</Chip>
+    </span>
+  );
+}
+
+function TraceArrow() {
+  return <span className="text-faint">→</span>;
 }
 
 export function SystemDetailPage() {
@@ -195,6 +208,28 @@ export function SystemDetailPage() {
         {reviewState(system.nextReviewDate) !== 'none' && <ReviewChip state={reviewState(system.nextReviewDate)} />}
       </div>
 
+      {/* Traceability chain */}
+      <Card className="mb-4">
+        <CardHeader title="Traceability" subtitle="How this system connects to its governance records" />
+        <div className="flex flex-wrap items-center gap-1.5 p-4">
+          <TraceStep label="AI System" count={1} tone="brand" />
+          <TraceArrow />
+          <TraceStep label="Risks" count={risks.length} tone="violet" />
+          <TraceArrow />
+          <TraceStep label="Controls" count={controls.length} tone="info" />
+          <TraceArrow />
+          <TraceStep label="Evidence" count={evidence.length} tone="ok" />
+          <TraceArrow />
+          <TraceStep label="Decisions" count={decisions.length} tone="neutral" />
+          <TraceArrow />
+          <TraceStep label="Incidents" count={incidents.length} tone={incidents.length ? 'warn' : 'neutral'} />
+          <TraceArrow />
+          <button onClick={auditPack} className="rounded-lg border border-border bg-panel-2 px-2.5 py-1.5 text-xs font-medium text-ink hover:border-border-strong hover:text-brand">
+            Reports →
+          </button>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left: details */}
         <div className="space-y-4 lg:col-span-2">
@@ -235,6 +270,22 @@ export function SystemDetailPage() {
               </div>
             )}
           </Card>
+
+          {(system.personalDataInvolved === 'yes' || system.sensitiveDataInvolved === 'yes' || system.dpiaNeeded || system.dataSubjects) && (
+            <Card>
+              <CardHeader title="Privacy / GDPR" subtitle="GDPR-relevant fields — for privacy review, not a legal determination" />
+              <dl className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
+                <Detail label="Data subjects" value={system.dataSubjects} />
+                <Detail label="Data categories" value={system.personalDataCategories} />
+                <Detail label="Retention note" value={system.retentionPeriod} />
+                <Detail label="Recipients / vendors" value={system.recipientsOrVendors} />
+                <Detail label="Intl. transfer" value={system.internationalTransferFlag ? 'Yes' : 'No / unknown'} />
+                <Detail label="Automated decision concern" value={system.automatedDecisionConcern ? 'Yes' : 'No'} />
+                <Detail label="DPIA needed" value={system.dpiaNeeded ? 'Yes' : 'No'} />
+                <Detail label="DPIA status" value={system.dpiaStatus} />
+              </dl>
+            </Card>
+          )}
 
           {/* Linked panels */}
           <LinkedPanel title="Linked risks" count={risks.length} onAdd={() => setModal({ t: 'risk', e: blankRisk(system.id) })} empty="No risks yet. Add prompt injection, data leakage, or bias risks.">

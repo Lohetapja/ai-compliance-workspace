@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { AISystem, SystemStatus, RiskCategory, AutonomyLevel } from '../../types';
-import { FRAMEWORKS, RISK_CATEGORY_LABELS, SYSTEM_STATUS_LABELS } from '../../types';
+import type { AISystem, SystemStatus, RiskCategory, AutonomyLevel, ReviewStatus } from '../../types';
+import { FRAMEWORKS, REVIEW_STATUS_LABELS, RISK_CATEGORY_LABELS, SYSTEM_STATUS_LABELS } from '../../types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Field, Input, Select, Textarea, TriSelect, Checkbox, TagPicker } from '../ui/Field';
@@ -153,6 +153,33 @@ export function SystemForm({
           <Field label="Inference data used">
             <Input value={d.inferenceDataUsed} onChange={(e) => set('inferenceDataUsed', e.target.value)} />
           </Field>
+        </Section>
+
+        <Section title="Privacy / GDPR (optional)">
+          <Field label="Data subjects">
+            <Input value={d.dataSubjects ?? ''} onChange={(e) => set('dataSubjects', e.target.value)} placeholder="e.g. customers, employees" />
+          </Field>
+          <Field label="Personal data categories">
+            <Input value={d.personalDataCategories ?? ''} onChange={(e) => set('personalDataCategories', e.target.value)} />
+          </Field>
+          <Field label="Retention note">
+            <Input value={d.retentionPeriod ?? ''} onChange={(e) => set('retentionPeriod', e.target.value)} />
+          </Field>
+          <Field label="Recipients / vendors">
+            <Input value={d.recipientsOrVendors ?? ''} onChange={(e) => set('recipientsOrVendors', e.target.value)} />
+          </Field>
+          <Field label="DPIA status">
+            <Select value={d.dpiaStatus ?? 'not-started'} onChange={(e) => set('dpiaStatus', e.target.value as ReviewStatus)}>
+              {(Object.keys(REVIEW_STATUS_LABELS) as ReviewStatus[]).map((s) => (
+                <option key={s} value={s}>{REVIEW_STATUS_LABELS[s]}</option>
+              ))}
+            </Select>
+          </Field>
+          <div className="flex flex-col justify-end gap-2 pb-1">
+            <Checkbox checked={!!d.internationalTransferFlag} onChange={(v) => set('internationalTransferFlag', v)} label="International transfer" />
+            <Checkbox checked={!!d.automatedDecisionConcern} onChange={(v) => set('automatedDecisionConcern', v)} label="Automated decision concern" />
+            <Checkbox checked={!!d.dpiaNeeded} onChange={(v) => set('dpiaNeeded', v)} label="DPIA needed" />
+          </div>
         </Section>
 
         <Section title="Oversight & operations">
