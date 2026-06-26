@@ -126,6 +126,15 @@ export function systemGaps(system: AISystem, data: WorkspaceData): Gap[] {
   const linkedControls = data.controls.filter((c) =>
     c.affectedAISystemIds.includes(system.id)
   );
+  const openGapActions = (data.gapActions ?? []).filter(
+    (g) =>
+      g.affectedAISystemId === system.id &&
+      g.status !== 'done' &&
+      g.status !== 'accepted-risk'
+  );
+  const openIncidents = data.incidents.filter(
+    (i) => i.affectedAISystemId === system.id && i.status !== 'resolved' && i.status !== 'closed'
+  );
 
   // Review date hygiene
   if (!system.nextReviewDate)
@@ -156,6 +165,10 @@ export function systemGaps(system: AISystem, data: WorkspaceData): Gap[] {
     gaps.push({ severity: 'info', message: 'Vendor review flagged.' });
   if (system.humanOversightReviewNeeded)
     gaps.push({ severity: 'info', message: 'Human-oversight review flagged.' });
+  if (system.personalDataInvolved === 'yes' && !system.privacyReviewNeeded)
+    gaps.push({ severity: 'warn', message: 'Personal data involved; privacy review should be considered.' });
+  if (system.customerFacing && system.loggingEnabled !== 'yes')
+    gaps.push({ severity: 'warn', message: 'Customer-facing system without confirmed logging.' });
 
   // Structural gaps
   if (linkedRisks.length === 0)
@@ -168,6 +181,12 @@ export function systemGaps(system: AISystem, data: WorkspaceData): Gap[] {
     gaps.push({ severity: 'warn', message: 'Logging is not enabled.' });
   if (system.auditTrailAvailable === 'no')
     gaps.push({ severity: 'warn', message: 'No audit trail available.' });
+  if (linkedRisks.some((r) => ['open', 'in-progress'].includes(r.status) && (r.severity === 'high' || r.severity === 'critical')))
+    gaps.push({ severity: 'warn', message: 'Open high or critical risk linked to this system.' });
+  if (openIncidents.length)
+    gaps.push({ severity: 'warn', message: 'Open incident or issue linked to this system.' });
+  if (openGapActions.length)
+    gaps.push({ severity: 'info', message: `${openGapActions.length} open gap action(s) linked to this system.` });
 
   return gaps;
 }

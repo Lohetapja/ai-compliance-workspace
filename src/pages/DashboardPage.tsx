@@ -62,6 +62,29 @@ export function DashboardPage() {
         description={`AI governance overview for ${data.organizationName}. Highlights what needs attention before an audit or internal review.`}
       />
 
+      <Card className="mb-5">
+        <CardHeader
+          title="Welcome to AI Compliance Workspace"
+          subtitle="A practical browser-based workspace for organizing AI systems, risks, controls, evidence, decisions, incidents, and audit-readiness information."
+        />
+        <div className="space-y-3 p-4 text-sm leading-relaxed text-muted">
+          <p>
+            Recommended workflow: create an AI system -> classify possible risk -> add risks -> assign controls ->
+            attach evidence -> record decisions -> log incidents/issues -> export an audit pack -> review again later.
+          </p>
+          <p className="text-xs text-faint">
+            This is a local-first demo. Data stays in browser localStorage. Do not enter real confidential,
+            customer, regulated, or sensitive data.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={loadSampleData}>Start with sample data</Button>
+            <Link to="/systems"><Button variant="secondary">Create first AI system</Button></Link>
+            <Link to="/dashboard"><Button variant="ghost">View dashboard</Button></Link>
+            <Link to="/about"><Button variant="ghost">Read disclaimer</Button></Link>
+          </div>
+        </div>
+      </Card>
+
       {/* Headline stats */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="AI systems" value={stats.totalSystems} icon="systems" tone="brand" to="/systems" />
@@ -80,8 +103,15 @@ export function DashboardPage() {
       <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Controls without evidence" value={stats.controlsWithoutEvidence} tone={stats.controlsWithoutEvidence ? 'danger' : 'ok'} icon="controls" to="/controls" />
         <StatCard label="Missing evidence items" value={stats.missingEvidenceCount} tone={stats.missingEvidenceCount ? 'warn' : 'ok'} to="/controls" hint="From recommended checklist" />
+        <StatCard label="Open gap actions" value={stats.openGapActions} tone={stats.openGapActions ? 'warn' : 'ok'} icon="warning" to="/gap-actions" />
+        <StatCard label="Overdue gap actions" value={stats.overdueGapActions} tone={stats.overdueGapActions ? 'danger' : 'ok'} to="/gap-actions" />
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="High-severity gaps" value={stats.highSeverityGapActions} tone={stats.highSeverityGapActions ? 'danger' : 'ok'} to="/gap-actions" />
         <StatCard label="Vendor reviews pending" value={stats.vendorReview} tone={stats.vendorReview ? 'warn' : 'neutral'} to="/systems" />
         <StatCard label="Systems for legal review" value={stats.legalReview} tone={stats.legalReview ? 'warn' : 'neutral'} to="/systems" />
+        <StatCard label="Evidence coverage" value={`${stats.coveragePct}%`} tone={stats.coveragePct >= 80 ? 'ok' : stats.coveragePct >= 50 ? 'warn' : 'danger'} to="/controls" />
       </div>
 
       {/* Inventory at a glance */}

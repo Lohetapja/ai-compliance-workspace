@@ -27,15 +27,26 @@ export function FrameworksPage() {
         const evidence = data.evidence.filter(
           (e) => e.frameworkTags.includes(fw) && e.linkedControlIds.some((id) => controlIds.has(id))
         );
+        const riskIds = new Set(risks.map((r) => r.id));
+        const evidenceIds = new Set(evidence.map((e) => e.id));
+        const gapActions = (data.gapActions ?? []).filter(
+          (g) =>
+            g.status !== 'done' &&
+            g.status !== 'accepted-risk' &&
+            (controlIds.has(g.linkedControlId) ||
+              riskIds.has(g.linkedRiskId) ||
+              evidenceIds.has(g.linkedEvidenceId))
+        );
         const openGaps =
           controls.filter((c) => c.status !== 'implemented' || controlLacksEvidence(c, data)).length +
-          risks.filter(isOpenRisk).length;
+          risks.filter(isOpenRisk).length +
+          gapActions.length;
         const note = data.frameworkNotes.find(
           (n) => n.framework === fw && n.requirementArea === (area === UNSPECIFIED ? 'Governance' : area)
         );
-        return { area, controls, risks, evidence, openGaps, note };
+        return { area, controls, risks, evidence, gapActions, openGaps, note };
       })
-      .filter((r) => r.controls.length || r.risks.length || r.note);
+      .filter((r) => r.controls.length || r.risks.length || r.evidence.length || r.gapActions.length || r.note);
   }, [data, fw]);
 
   const totals = useMemo(() => {
@@ -55,8 +66,7 @@ export function FrameworksPage() {
 
       <div className="mb-4 rounded-xl border border-warn/25 bg-warn/10 px-4 py-3 text-xs leading-relaxed text-warn">
         <Icon name="warning" size={14} className="mr-1 inline" />
-        Mapping is high-level and requires human review. Framework tags here are orientation aids,
-        not a determination of compliance with the EU AI Act, ISO/IEC 42001, GDPR, or any other framework.
+        Framework mapping is high-level and for organization only. It does not reproduce official framework text and does not determine compliance.
       </div>
 
       {/* Framework selector */}
@@ -89,7 +99,7 @@ export function FrameworksPage() {
         </p>
       ) : (
         <div className="space-y-3">
-          {areaRows.map(({ area, controls, risks, evidence, openGaps, note }) => (
+          {areaRows.map(({ area, controls, risks, evidence, gapActions, openGaps, note }) => (
             <Card key={area} className="p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-ink">{area}</h3>
@@ -101,8 +111,8 @@ export function FrameworksPage() {
                 </div>
               </div>
 
-              {(controls.length > 0 || risks.length > 0) && (
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {(controls.length > 0 || risks.length > 0 || gapActions.length > 0) && (
+                <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
                   {controls.length > 0 && (
                     <div>
                       <div className="label">Related controls</div>
@@ -122,6 +132,18 @@ export function FrameworksPage() {
                       <ul className="space-y-0.5">
                         {risks.map((r) => (
                           <li key={r.id} className="truncate text-xs text-muted">{r.riskTitle}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {gapActions.length > 0 && (
+                    <div>
+                      <div className="label">Open gap actions</div>
+                      <ul className="space-y-0.5">
+                        {gapActions.map((g) => (
+                          <li key={g.id} className="truncate text-xs text-muted">
+                            {g.title} ({g.status}, {g.owner || 'no owner'})
+                          </li>
                         ))}
                       </ul>
                     </div>

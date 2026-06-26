@@ -4,6 +4,7 @@ import type {
   Control,
   Decision,
   Evidence,
+  GapAction,
   Incident,
   WorkspaceData,
 } from '../types';
@@ -57,6 +58,10 @@ function dec(x: Omit<Decision, 'createdAt' | 'updatedAt'> & { createdDays: numbe
   return { ...rest, createdAt: ts(createdDays), updatedAt: ts(createdDays + 1) };
 }
 function inc(x: Omit<Incident, 'createdAt' | 'updatedAt'> & { createdDays: number }): Incident {
+  const { createdDays, ...rest } = x;
+  return { ...rest, createdAt: ts(createdDays), updatedAt: ts(createdDays + 1) };
+}
+function gap(x: Omit<GapAction, 'createdAt' | 'updatedAt'> & { createdDays: number }): GapAction {
   const { createdDays, ...rest } = x;
   return { ...rest, createdAt: ts(createdDays), updatedAt: ts(createdDays + 1) };
 }
@@ -1325,6 +1330,60 @@ export function sampleWorkspace(): WorkspaceData {
     }),
   ];
 
+  const gapActions: GapAction[] = [
+    gap({
+      id: 'gap-support-vendor-review',
+      title: 'Complete vendor assessment for support assistant provider',
+      description:
+        'Provider dependency is documented as a risk, but the vendor assessment evidence is still draft. Review data terms, security posture, and fallback options.',
+      affectedAISystemId: 'sys-support',
+      gapType: 'Missing vendor review',
+      severity: 'high',
+      owner: 'Lena Virtanen',
+      dueDate: d(14),
+      status: 'in-progress',
+      linkedControlId: 'ctrl-vendor',
+      linkedEvidenceId: '',
+      linkedRiskId: 'risk-vendor-support',
+      notes: 'Fictional demo action showing how a review gap becomes owned follow-up work.',
+      createdDays: -18,
+    }),
+    gap({
+      id: 'gap-abuse-fairness-eval',
+      title: 'Expand abuse classifier fairness evaluation',
+      description:
+        'False-positive incident showed language coverage gaps. Add evaluation evidence for additional languages before the next review.',
+      affectedAISystemId: 'sys-abuse',
+      gapType: 'Missing evidence',
+      severity: 'medium',
+      owner: 'Marco Bianchi',
+      dueDate: d(7),
+      status: 'open',
+      linkedControlId: 'ctrl-bias',
+      linkedEvidenceId: 'evd-bias-abuse',
+      linkedRiskId: 'risk-bias-abuse',
+      notes: 'Keep human confirmation in place while evaluation improves.',
+      createdDays: -12,
+    }),
+    gap({
+      id: 'gap-portal-incident-process',
+      title: 'Attach incident process evidence for deployment portal',
+      description:
+        'Deployment portal has security controls, but the incident response evidence is not linked to the system yet.',
+      affectedAISystemId: 'sys-portal',
+      gapType: 'Missing incident process',
+      severity: 'medium',
+      owner: 'Sofia Andersson',
+      dueDate: d(-3),
+      status: 'blocked',
+      linkedControlId: 'ctrl-incident',
+      linkedEvidenceId: 'evd-irplan',
+      linkedRiskId: 'risk-tenant-portal',
+      notes: 'Blocked pending platform runbook review.',
+      createdDays: -20,
+    }),
+  ];
+
   return {
     systems,
     risks,
@@ -1332,6 +1391,7 @@ export function sampleWorkspace(): WorkspaceData {
     evidence,
     decisions,
     incidents,
+    gapActions,
     frameworkNotes: [
       {
         id: 'fwn-aiact-oversight',

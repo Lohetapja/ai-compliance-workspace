@@ -16,6 +16,7 @@ const KIND_ROUTE: Record<EntityKind, string> = {
   evidence: '/controls',
   decision: '/decisions',
   incident: '/incidents',
+  gapAction: '/gap-actions',
 };
 
 function hay(...parts: (string | string[] | undefined)[]): string {
@@ -105,6 +106,16 @@ export function searchWorkspace(
         title: i.incidentTitle || 'Untitled incident',
         subtitle: `Incident · ${i.type} · ${i.severity}`,
         to: KIND_ROUTE.incident,
+      });
+  }
+  for (const g of data.gapActions ?? []) {
+    if (hay(g.title, g.description, g.owner, g.gapType, g.notes).includes(q))
+      results.push({
+        kind: 'gapAction',
+        id: g.id,
+        title: g.title || 'Untitled gap action',
+        subtitle: `Gap Action · ${g.gapType} · ${g.status}`,
+        to: KIND_ROUTE.gapAction,
       });
   }
 

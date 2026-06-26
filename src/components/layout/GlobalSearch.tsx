@@ -13,6 +13,7 @@ const KIND_LABEL: Record<EntityKind, string> = {
   evidence: 'Evidence',
   decision: 'Decision',
   incident: 'Incident',
+  gapAction: 'Gap Action',
 };
 
 export function GlobalSearch() {

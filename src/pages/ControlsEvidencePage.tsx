@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
-import type { Control, Evidence } from '../types';
+import type { Control, Evidence, FrameworkId } from '../types';
+import { FRAMEWORKS } from '../types';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
@@ -33,6 +34,15 @@ export function ControlsEvidencePage() {
   const [templates, setTemplates] = useState<Tab | null>(null);
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
+  const [owner, setOwner] = useState('');
+  const [systemId, setSystemId] = useState('');
+  const [type, setType] = useState('');
+  const [framework, setFramework] = useState('');
+
+  const owners = useMemo(
+    () => [...new Set(data.evidence.map((e) => e.owner).filter(Boolean))].sort(),
+    [data.evidence]
+  );
 
   const controlRows = useMemo(
     () =>
@@ -43,15 +53,44 @@ export function ControlsEvidencePage() {
       }),
     [data.controls, q, status]
   );
+
   const evidenceRows = useMemo(
     () =>
       data.evidence.filter((e) => {
         if (q && !`${e.evidenceTitle} ${e.description} ${e.owner} ${e.evidenceType}`.toLowerCase().includes(q.toLowerCase())) return false;
         if (status && e.status !== status) return false;
+        if (owner && e.owner !== owner) return false;
+        if (systemId && !e.linkedAISystemIds.includes(systemId)) return false;
+        if (type && e.evidenceType !== type) return false;
+        if (framework && !e.frameworkTags.includes(framework as FrameworkId)) return false;
         return true;
       }),
-    [data.evidence, q, status]
+    [data.evidence, q, status, owner, systemId, type, framework]
   );
+
+  function systemNames(e: Evidence): string {
+    const names = e.linkedAISystemIds
+      .map((id) => data.systems.find((s) => s.id === id)?.systemName)
+      .filter(Boolean);
+    return names.length ? names.join(', ') : 'No system linked';
+  }
+
+  function controlNames(e: Evidence): string {
+    const names = e.linkedControlIds
+      .map((id) => data.controls.find((c) => c.id === id)?.controlTitle)
+      .filter(Boolean);
+    return names.length ? names.join(', ') : 'No control linked';
+  }
+
+  function freshness(e: Evidence): string {
+    if (e.status === 'missing') return 'Missing';
+    if (e.status === 'expired') return 'Expired';
+    if (!e.reviewDate) return 'No review date';
+    const state = reviewState(e.reviewDate);
+    if (state === 'overdue') return 'Review overdue';
+    if (state === 'due-7' || state === 'due-30') return 'Review soon';
+    return 'Current';
+  }
 
   const controlColumns: Column<Control>[] = [
     {
@@ -91,13 +130,21 @@ export function ControlsEvidencePage() {
       cell: (e) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{e.evidenceTitle}</div>
-          <div className="truncate text-[11px] text-faint">{e.evidenceType} · {e.linkedAISystemIds.length} system(s)</div>
+          <div className="truncate text-[11px] text-faint">{e.evidenceType} · {systemNames(e)}</div>
         </div>
       ),
     },
     { header: 'Status', cell: (e) => <EvidenceStatusChip value={e.status} /> },
     { header: 'Owner', cell: (e) => <span className="text-xs text-muted">{e.owner || '—'}</span> },
-    { header: 'Reference', cell: (e) => <span className="truncate text-xs text-muted">{e.fileReferenceOrUrlOrNote || '—'}</span> },
+    { header: 'Linked control', cell: (e) => <span className="truncate text-xs text-muted">{controlNames(e)}</span> },
+    {
+      header: 'Freshness',
+      cell: (e) => {
+        const state = freshness(e);
+        const bad = ['Missing', 'Expired', 'Review overdue'].includes(state);
+        return <Chip tone={bad ? 'danger' : state === 'Current' ? 'ok' : 'warn'}>{state}</Chip>;
+      },
+    },
     {
       header: 'Review',
       cell: (e) => {
@@ -112,11 +159,20 @@ export function ControlsEvidencePage() {
       ? ['not-started', 'planned', 'implemented', 'needs-review', 'missing-evidence', 'retired']
       : ['missing', 'draft', 'available', 'reviewed', 'expired'];
 
+  function switchTab(t: Tab) {
+    setTab(t);
+    setStatus('');
+    setOwner('');
+    setSystemId('');
+    setType('');
+    setFramework('');
+  }
+
   return (
     <>
       <PageHeader
         title="Controls & Evidence"
-        description="Controls reduce risks; evidence shows the controls are real. A control marked “evidence required” needs at least one available or reviewed evidence item."
+        description="Controls reduce risks; evidence shows the controls are real. Evidence records should point to documentation or notes, not sensitive files."
         actions={
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setTemplates(tab)}>
@@ -129,11 +185,15 @@ export function ControlsEvidencePage() {
         }
       />
 
+      <div className="mb-4 rounded-xl border border-border bg-panel px-4 py-3 text-xs leading-relaxed text-muted">
+        Evidence Library view: track title, type, linked AI system, linked control, owner, status, review date, freshness, framework tags, and notes.
+      </div>
+
       <div className="mb-4 inline-flex rounded-lg border border-border bg-panel p-0.5">
         {(['controls', 'evidence'] as Tab[]).map((t) => (
           <button
             key={t}
-            onClick={() => { setTab(t); setStatus(''); }}
+            onClick={() => switchTab(t)}
             className={cn(
               'rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors',
               tab === t ? 'bg-brand/15 text-brand' : 'text-muted hover:text-ink'
@@ -146,24 +206,32 @@ export function ControlsEvidencePage() {
 
       {(tab === 'controls' ? data.controls.length : data.evidence.length) === 0 ? (
         <EmptyState
-          icon={tab === 'controls' ? '▣' : '▤'}
+          icon={tab === 'controls' ? '□' : '◇'}
           title={tab === 'controls' ? 'No controls yet' : 'No evidence yet'}
           hint={
             tab === 'controls'
               ? 'Add controls like human oversight, logging & audit trail, vendor assessment, or bias testing. Use Templates to start quickly.'
-              : 'Add evidence like a risk assessment, model card, logging configuration, or DPIA note. Store a reference or note — not the sensitive file itself.'
+              : 'Add evidence like a risk assessment, model card, logging configuration, or DPIA note. Store a reference or note, not the sensitive file itself.'
           }
-          action={
-            <Button variant="primary" onClick={() => setTemplates(tab)}>Add from template</Button>
-          }
+          action={<Button variant="primary" onClick={() => setTemplates(tab)}>Add from template</Button>}
         />
       ) : (
         <>
           <FilterBar
             search={q}
             onSearch={setQ}
-            searchPlaceholder={`Search ${tab}…`}
-            filters={[{ label: 'Status', value: status, onChange: setStatus, options: statusOptions.map((v) => ({ value: v, label: v })) }]}
+            searchPlaceholder={`Search ${tab}...`}
+            filters={
+              tab === 'controls'
+                ? [{ label: 'Status', value: status, onChange: setStatus, options: statusOptions.map((v) => ({ value: v, label: v })) }]
+                : [
+                    { label: 'Status', value: status, onChange: setStatus, options: statusOptions.map((v) => ({ value: v, label: v })) },
+                    { label: 'Type', value: type, onChange: setType, options: EVIDENCE_TYPES.map((v) => ({ value: v, label: v })) },
+                    { label: 'Owner', value: owner, onChange: setOwner, options: owners.map((o) => ({ value: o, label: o })) },
+                    { label: 'System', value: systemId, onChange: setSystemId, options: data.systems.map((s) => ({ value: s.id, label: s.systemName })) },
+                    { label: 'Framework', value: framework, onChange: setFramework, options: FRAMEWORKS.map((f) => ({ value: f, label: f })) },
+                  ]
+            }
           />
           {tab === 'controls' ? (
             <DataTable rows={controlRows} columns={controlColumns} getKey={(c) => c.id} onRowClick={(c) => setEditingControl(c)} />

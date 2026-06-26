@@ -1,12 +1,14 @@
 import {
   CONTROL_STATUS_LABELS,
   EVIDENCE_STATUS_LABELS,
+  GAP_ACTION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   RISK_CATEGORY_LABELS,
   RISK_STATUS_LABELS,
   SYSTEM_STATUS_LABELS,
   type ControlStatus,
   type EvidenceStatus,
+  type GapActionStatus,
   type IncidentStatus,
   type RiskCategory,
   type RiskStatus,
@@ -85,6 +87,14 @@ const INCIDENT_STATUS_TONE: Record<IncidentStatus, Tone> = {
   closed: 'neutral',
 };
 
+const GAP_ACTION_STATUS_TONE: Record<GapActionStatus, Tone> = {
+  open: 'danger',
+  'in-progress': 'warn',
+  blocked: 'critical',
+  done: 'ok',
+  'accepted-risk': 'info',
+};
+
 export const SystemStatusChip = ({ value }: { value: SystemStatus }) => (
   <Chip tone={SYSTEM_STATUS_TONE[value]}>{SYSTEM_STATUS_LABELS[value]}</Chip>
 );
@@ -105,6 +115,9 @@ export const SeverityChip = ({ value }: { value: Severity }) => (
 );
 export const IncidentStatusChip = ({ value }: { value: IncidentStatus }) => (
   <Chip tone={INCIDENT_STATUS_TONE[value]}>{INCIDENT_STATUS_LABELS[value]}</Chip>
+);
+export const GapActionStatusChip = ({ value }: { value: GapActionStatus }) => (
+  <Chip tone={GAP_ACTION_STATUS_TONE[value]}>{GAP_ACTION_STATUS_LABELS[value]}</Chip>
 );
 export const ReviewChip = ({ state }: { state: ReviewState }) =>
   state === 'none' ? null : (

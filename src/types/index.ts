@@ -179,6 +179,48 @@ export const INCIDENT_STATUS_LABELS: Record<IncidentStatus, string> = {
   closed: 'Closed',
 };
 
+export type GapActionStatus =
+  | 'open'
+  | 'in-progress'
+  | 'blocked'
+  | 'done'
+  | 'accepted-risk';
+
+export const GAP_ACTION_STATUS_LABELS: Record<GapActionStatus, string> = {
+  open: 'Open',
+  'in-progress': 'In Progress',
+  blocked: 'Blocked',
+  done: 'Done',
+  'accepted-risk': 'Accepted Risk',
+};
+
+export type GapType =
+  | 'Missing evidence'
+  | 'Missing owner'
+  | 'Missing review date'
+  | 'Missing human oversight'
+  | 'Missing logging'
+  | 'Missing audit trail'
+  | 'Missing vendor review'
+  | 'Missing privacy review'
+  | 'Missing security review'
+  | 'Missing incident process'
+  | 'Missing monitoring plan';
+
+export const GAP_TYPES: GapType[] = [
+  'Missing evidence',
+  'Missing owner',
+  'Missing review date',
+  'Missing human oversight',
+  'Missing logging',
+  'Missing audit trail',
+  'Missing vendor review',
+  'Missing privacy review',
+  'Missing security review',
+  'Missing incident process',
+  'Missing monitoring plan',
+];
+
 /** High-level framework identifiers. Mapping is intentionally coarse. */
 export type FrameworkId =
   | 'EU AI Act'
@@ -210,6 +252,7 @@ export type RequirementArea =
   | 'Data Governance'
   | 'Privacy'
   | 'Security'
+  | 'Access Control'
   | 'Logging'
   | 'Monitoring'
   | 'Incident Response'
@@ -229,6 +272,7 @@ export const REQUIREMENT_AREAS: RequirementArea[] = [
   'Data Governance',
   'Privacy',
   'Security',
+  'Access Control',
   'Logging',
   'Monitoring',
   'Incident Response',
@@ -397,6 +441,24 @@ export interface Incident {
   updatedAt: ISODate;
 }
 
+export interface GapAction {
+  id: ID;
+  title: string;
+  description: string;
+  affectedAISystemId: ID | '';
+  gapType: GapType;
+  severity: Severity;
+  owner: string;
+  dueDate: ISODate | '';
+  status: GapActionStatus;
+  linkedControlId: ID | '';
+  linkedEvidenceId: ID | '';
+  linkedRiskId: ID | '';
+  notes: string;
+  createdAt: ISODate;
+  updatedAt: ISODate;
+}
+
 /* ------------------------------------------------------------------ */
 /* Risk Classification Helper                                          */
 /* ------------------------------------------------------------------ */
@@ -445,6 +507,7 @@ export interface WorkspaceData {
   evidence: Evidence[];
   decisions: Decision[];
   incidents: Incident[];
+  gapActions: GapAction[];
   frameworkNotes: FrameworkNote[];
   organizationName: string;
 }
@@ -462,4 +525,5 @@ export type EntityKind =
   | 'control'
   | 'evidence'
   | 'decision'
-  | 'incident';
+  | 'incident'
+  | 'gapAction';

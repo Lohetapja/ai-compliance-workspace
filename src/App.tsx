@@ -8,11 +8,13 @@ import { SystemDetailPage } from './pages/SystemDetailPage';
 import { RiskHelperPage } from './pages/RiskHelperPage';
 import { RiskRegisterPage } from './pages/RiskRegisterPage';
 import { ControlsEvidencePage } from './pages/ControlsEvidencePage';
+import { GapActionsPage } from './pages/GapActionsPage';
 import { DecisionsPage } from './pages/DecisionsPage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { FrameworksPage } from './pages/FrameworksPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AboutProjectPage } from './pages/AboutProjectPage';
 
 const SEED_FLAG = 'ai-compliance-workspace:seeded';
 
@@ -41,11 +43,13 @@ export function App() {
           <Route path="/risk-helper" element={<RiskHelperPage />} />
           <Route path="/risks" element={<RiskRegisterPage />} />
           <Route path="/controls" element={<ControlsEvidencePage />} />
+          <Route path="/gap-actions" element={<GapActionsPage />} />
           <Route path="/decisions" element={<DecisionsPage />} />
           <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/frameworks" element={<FrameworksPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/about" element={<AboutProjectPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

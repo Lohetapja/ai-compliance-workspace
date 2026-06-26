@@ -7,6 +7,7 @@ import type {
   Control,
   Decision,
   Evidence,
+  GapAction,
   Incident,
 } from '../types';
 import { RISK_CATEGORY_LABELS } from '../types';
@@ -31,11 +32,12 @@ import { formatDate, reviewState } from '../lib/dates';
 import { systemCoverage, systemGaps } from '../lib/coverage';
 import { singleSystemAuditPack } from '../lib/reports';
 import { downloadText, slugify } from '../lib/download';
-import { blankControl, blankDecision, blankEvidence, blankIncident, blankRisk } from '../data/factories';
+import { blankControl, blankDecision, blankEvidence, blankGapAction, blankIncident, blankRisk } from '../data/factories';
 import { SystemForm } from '../components/forms/SystemForm';
 import { RiskForm } from '../components/forms/RiskForm';
 import { ControlForm } from '../components/forms/ControlForm';
 import { EvidenceForm } from '../components/forms/EvidenceForm';
+import { GapActionForm } from '../components/forms/GapActionForm';
 import { DecisionForm } from '../components/forms/DecisionForm';
 import { IncidentForm } from '../components/forms/IncidentForm';
 
@@ -44,6 +46,7 @@ type Modal =
   | { t: 'risk'; e: AIRisk }
   | { t: 'control'; e: Control }
   | { t: 'evidence'; e: Evidence }
+  | { t: 'gapAction'; e: GapAction }
   | { t: 'decision'; e: Decision }
   | { t: 'incident'; e: Incident }
   | null;
@@ -107,6 +110,7 @@ export function SystemDetailPage() {
   const removeSystem = useStore((s) => s.removeSystem);
   const duplicateSystem = useStore((s) => s.duplicateSystem);
   const archiveSystem = useStore((s) => s.archiveSystem);
+  const patchGapAction = useStore((s) => s.patchGapAction);
   const [modal, setModal] = useState<Modal>(null);
 
   const system = data.systems.find((s) => s.id === id);
@@ -126,6 +130,8 @@ export function SystemDetailPage() {
   const evidence = data.evidence.filter((e) => e.linkedAISystemIds.includes(system.id));
   const decisions = data.decisions.filter((d) => d.affectedAISystemId === system.id);
   const incidents = data.incidents.filter((i) => i.affectedAISystemId === system.id);
+  const gapActions = (data.gapActions ?? []).filter((g) => g.affectedAISystemId === system.id);
+  const openGapActions = gapActions.filter((g) => g.status !== 'done' && g.status !== 'accepted-risk');
   const cov = systemCoverage(system, data);
   const gaps = systemGaps(system, data);
 
@@ -299,7 +305,11 @@ export function SystemDetailPage() {
           </Card>
 
           <Card>
-            <CardHeader title={`Open gaps (${gaps.length})`} subtitle="Missing-evidence & hygiene warnings" />
+            <CardHeader
+              title={`Open gaps (${gaps.length})`}
+              subtitle="Missing-evidence & hygiene warnings"
+              actions={<Button size="sm" variant="secondary" onClick={() => setModal({ t: 'gapAction', e: blankGapAction(system.id) })}>Create gap action</Button>}
+            />
             {gaps.length === 0 ? (
               <p className="px-4 py-4 text-xs text-faint">No gaps detected from the recommended checklist.</p>
             ) : (
@@ -311,6 +321,39 @@ export function SystemDetailPage() {
                   </li>
                 ))}
               </ul>
+            )}
+          </Card>
+
+          <Card>
+            <CardHeader
+              title={`Gap actions (${openGapActions.length})`}
+              subtitle="Owned follow-ups for missing evidence, reviews, or controls"
+              actions={<Button size="sm" variant="secondary" onClick={() => setModal({ t: 'gapAction', e: blankGapAction(system.id) })}>Add</Button>}
+            />
+            {gapActions.length === 0 ? (
+              <p className="px-4 py-4 text-xs text-faint">No gap actions yet. Create one when a warning needs a named owner or due date.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {gapActions.map((g) => (
+                  <div key={g.id} className="px-4 py-3">
+                    <button onClick={() => setModal({ t: 'gapAction', e: g })} className="w-full text-left">
+                      <div className="text-sm font-medium text-ink">{g.title}</div>
+                      <div className="mt-0.5 text-[11px] text-faint">{g.gapType} · {g.owner || 'No owner'} · {g.status}</div>
+                    </button>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {g.status !== 'done' && (
+                        <Button size="sm" variant="secondary" onClick={() => patchGapAction(g.id, { status: 'done' })}>Mark done</Button>
+                      )}
+                      {g.status !== 'accepted-risk' && (
+                        <Button size="sm" variant="ghost" onClick={() => patchGapAction(g.id, { status: 'accepted-risk' })}>Accept risk</Button>
+                      )}
+                      {evidence.length > 0 && !g.linkedEvidenceId && (
+                        <Button size="sm" variant="ghost" onClick={() => patchGapAction(g.id, { linkedEvidenceId: evidence[0].id })}>Link evidence</Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </Card>
 
@@ -332,6 +375,7 @@ export function SystemDetailPage() {
       {modal?.t === 'risk' && <RiskForm initial={modal.e} onClose={() => setModal(null)} />}
       {modal?.t === 'control' && <ControlForm initial={modal.e} onClose={() => setModal(null)} />}
       {modal?.t === 'evidence' && <EvidenceForm initial={modal.e} onClose={() => setModal(null)} />}
+      {modal?.t === 'gapAction' && <GapActionForm initial={modal.e} onClose={() => setModal(null)} />}
       {modal?.t === 'decision' && <DecisionForm initial={modal.e} onClose={() => setModal(null)} />}
       {modal?.t === 'incident' && <IncidentForm initial={modal.e} onClose={() => setModal(null)} />}
     </>

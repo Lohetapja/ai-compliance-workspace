@@ -1,18 +1,15 @@
-import type { AISystem, WorkspaceData } from '../types';
+import type { AISystem, GapAction, WorkspaceData } from '../types';
 import {
   RISK_CATEGORY_LABELS,
   SYSTEM_STATUS_LABELS,
 } from '../types';
 import { formatDate, relativeReview } from './dates';
-import { systemGaps, systemCoverage, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
+import { systemCoverage, systemGaps, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
 import { dashboardStats, reviewItems, isOpenRisk } from './selectors';
 import { HELPER_DISCLAIMER } from './riskHelper';
 
 const DISCLAIMER =
-  '> **Disclaimer.** This document is a working governance artifact produced by a ' +
-  'practical workspace tool. It is **not legal advice**, **not a certification**, ' +
-  'and **does not establish EU AI Act, ISO/IEC 42001, or any other compliance status**. ' +
-  'Framework references are high-level and require human (legal / privacy / security) review.';
+  '> **Disclaimer.** This report is not legal advice, not a compliance certification, and not a final legal determination. It is a structured governance and audit-preparation summary. Framework references are high-level and require human legal, privacy, security, and governance review.';
 
 function h(title: string, level = 1): string {
   return `${'#'.repeat(level)} ${title}\n`;
@@ -20,7 +17,7 @@ function h(title: string, level = 1): string {
 
 function meta(data: WorkspaceData, reportName: string): string {
   return (
-    `*${reportName}* — **${data.organizationName}**  \n` +
+    `*${reportName}* - **${data.organizationName}**  \n` +
     `*Generated:* ${new Date().toLocaleString()}\n\n${DISCLAIMER}\n`
   );
 }
@@ -33,8 +30,23 @@ function table(headers: string[], rows: string[][]): string {
   if (rows.length === 0) return '_No records._\n';
   const head = `| ${headers.join(' | ')} |`;
   const sep = `| ${headers.map(() => '---').join(' | ')} |`;
-  const body = rows.map((r) => `| ${r.map((c) => c.replace(/\|/g, '\\|')).join(' | ')} |`).join('\n');
+  const body = rows.map((r) => `| ${r.map((c) => String(c ?? '').replace(/\|/g, '\\|')).join(' | ')} |`).join('\n');
   return `${head}\n${sep}\n${body}\n`;
+}
+
+function systemName(data: WorkspaceData, id: string): string {
+  return data.systems.find((s) => s.id === id)?.systemName ?? '—';
+}
+
+function activeGapActions(data: WorkspaceData, systemId?: string): GapAction[] {
+  return (data.gapActions ?? []).filter((g) => {
+    if (systemId && g.affectedAISystemId !== systemId) return false;
+    return g.status !== 'done' && g.status !== 'accepted-risk';
+  });
+}
+
+function severityRank(s: string): number {
+  return { low: 0, medium: 1, high: 2, critical: 3 }[s] ?? 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -58,7 +70,7 @@ export function systemSummaryReport(data: WorkspaceData): string {
     meta(data, 'AI System Summary Report') +
     '\n' +
     table(
-      ['System', 'Owner', 'Status', 'Risk', 'Cust-facing', 'Personal data', 'Next review'],
+      ['System', 'Owner', 'Status', 'Risk', 'Customer-facing', 'Personal data', 'Next review'],
       rows
     )
   );
@@ -71,7 +83,7 @@ export function systemSummaryReport(data: WorkspaceData): string {
 export function riskRegisterReport(data: WorkspaceData): string {
   const rows = data.risks.map((r) => [
     r.riskTitle,
-    data.systems.find((s) => s.id === r.affectedAISystemId)?.systemName ?? '—',
+    systemName(data, r.affectedAISystemId),
     r.severity,
     `${r.likelihood}/${r.impact}`,
     r.status,
@@ -82,10 +94,7 @@ export function riskRegisterReport(data: WorkspaceData): string {
     h('AI Risk Register Report') +
     meta(data, 'AI Risk Register Report') +
     '\n' +
-    table(
-      ['Risk', 'System', 'Severity', 'L/I', 'Status', 'Owner', 'Review'],
-      rows
-    )
+    table(['Risk', 'System', 'Severity', 'Likelihood/Impact', 'Status', 'Owner', 'Review'], rows)
   );
 }
 
@@ -97,14 +106,16 @@ export function auditReadinessReport(data: WorkspaceData): string {
   const stats = dashboardStats(data);
   const cov = workspaceCoverage(data);
   const overdue = reviewItems(data).filter((r) => r.state === 'overdue');
+  const openGaps = activeGapActions(data);
 
   let out = h('Audit Readiness Report') + meta(data, 'Audit Readiness Report') + '\n';
   out += h('Overview', 2);
   out += list([
-    `AI systems (active): **${stats.totalSystems}**`,
-    `Possible high-risk (review needed): **${stats.possibleHighRisk}**`,
+    `AI systems active: **${stats.totalSystems}**`,
+    `Possible elevated/high-review areas: **${stats.possibleHighRisk}**`,
     `Open high risks: **${stats.openHighRisks}**, open critical risks: **${stats.openCriticalRisks}**`,
-    `Open incidents: **${stats.openIncidents}**`,
+    `Open incidents/issues: **${stats.openIncidents}**`,
+    `Open gap actions: **${stats.openGapActions}**`,
     `Controls without usable evidence: **${stats.controlsWithoutEvidence}**`,
     `Evidence Coverage: **${cov.pct}%** (${cov.documented}/${cov.expected} recommended items documented)`,
   ]);
@@ -120,6 +131,12 @@ export function auditReadinessReport(data: WorkspaceData): string {
   out += table(
     ['Type', 'Item', 'Owner', 'Due'],
     overdue.map((r) => [r.kind, r.title, r.owner || '—', relativeReview(r.date)])
+  );
+
+  out += '\n' + h('Open gap actions', 2);
+  out += table(
+    ['Action', 'System', 'Severity', 'Status', 'Owner', 'Due'],
+    openGaps.map((g) => [g.title, systemName(data, g.affectedAISystemId), g.severity, g.status, g.owner || '—', formatDate(g.dueDate)])
   );
 
   out += '\n' + h('Per-system evidence coverage', 2);
@@ -158,15 +175,21 @@ export function controlEvidenceGapReport(data: WorkspaceData): string {
   for (const s of data.systems.filter((x) => x.currentStatus !== 'archived')) {
     const cov = systemCoverage(s, data);
     if (cov.missingTypes.length === 0) continue;
-    out += `\n**${s.systemName}** — ${cov.documented}/${cov.expected} documented\n`;
+    out += `\n**${s.systemName}** - ${cov.documented}/${cov.expected} documented\n`;
     out += list(cov.missingTypes.map((t) => `Missing: ${t}`));
   }
 
-  out += '\n' + h('Evidence needing attention (missing / draft / expired)', 2);
+  out += '\n' + h('Open gap actions', 2);
+  out += table(
+    ['Action', 'System', 'Gap type', 'Severity', 'Status', 'Owner'],
+    activeGapActions(data).map((g) => [g.title, systemName(data, g.affectedAISystemId), g.gapType, g.severity, g.status, g.owner || '—'])
+  );
+
+  out += '\n' + h('Evidence needing attention', 2);
   const evRows = data.evidence
     .filter((e) => ['missing', 'draft', 'expired'].includes(e.status))
-    .map((e) => [e.evidenceTitle, e.evidenceType, e.status, e.owner || '—']);
-  out += table(['Evidence', 'Type', 'Status', 'Owner'], evRows);
+    .map((e) => [e.evidenceTitle, e.evidenceType, e.status, e.owner || '—', formatDate(e.reviewDate)]);
+  out += table(['Evidence', 'Type', 'Status', 'Owner', 'Review'], evRows);
   return out;
 }
 
@@ -177,24 +200,18 @@ export function controlEvidenceGapReport(data: WorkspaceData): string {
 export function incidentSummaryReport(data: WorkspaceData): string {
   const rows = data.incidents.map((i) => [
     i.incidentTitle,
-    data.systems.find((s) => s.id === i.affectedAISystemId)?.systemName ?? '—',
+    systemName(data, i.affectedAISystemId),
     i.type,
     i.severity,
     i.status,
     i.owner || '—',
     formatDate(i.detectionTime),
   ]);
-  let out =
-    h('Incident / Issue Summary Report') +
-    meta(data, 'Incident / Issue Summary Report') +
-    '\n';
-  out += table(
-    ['Incident', 'System', 'Type', 'Severity', 'Status', 'Owner', 'Detected'],
-    rows
-  );
+  let out = h('Incident / Issue Summary Report') + meta(data, 'Incident / Issue Summary Report') + '\n';
+  out += table(['Incident', 'System', 'Type', 'Severity', 'Status', 'Owner', 'Detected'], rows);
   const open = data.incidents.filter((i) => i.status !== 'closed' && i.status !== 'resolved');
   if (open.length) {
-    out += '\n' + h('Open / active — lessons & follow-ups', 2);
+    out += '\n' + h('Open / active follow-up', 2);
     for (const i of open) {
       out += `\n### ${i.incidentTitle}\n`;
       out += list([
@@ -213,43 +230,48 @@ export function incidentSummaryReport(data: WorkspaceData): string {
 
 export function managementOverviewReport(data: WorkspaceData): string {
   const stats = dashboardStats(data);
-  let out = h('Management Overview Report') + meta(data, 'Management Overview Report') + '\n';
-  out += h('AI portfolio at a glance', 2);
-  out += list([
-    `Active AI systems: **${stats.totalSystems}**`,
-    `By risk band: ${Object.entries(stats.byRiskCategory)
-      .filter(([, n]) => n > 0)
-      .map(([k, n]) => `${RISK_CATEGORY_LABELS[k as keyof typeof RISK_CATEGORY_LABELS]}: ${n}`)
-      .join(', ') || '—'}`,
-    `Systems flagged for legal review: **${stats.legalReview}**`,
-    `Systems flagged for privacy review: **${stats.privacyReview}**`,
-    `Systems flagged for security review: **${stats.securityReview}**`,
-    `Vendor reviews pending: **${stats.vendorReview}**`,
-  ]);
-  out += '\n' + h('Risk & assurance', 2);
-  out += list([
-    `Open high / critical risks: **${stats.openHighRisks} / ${stats.openCriticalRisks}**`,
-    `Open incidents: **${stats.openIncidents}**`,
-    `Overdue reviews: **${stats.overdueReviews}** (due ≤7d: ${stats.due7}, ≤30d: ${stats.due30})`,
-    `Evidence Coverage: **${stats.coveragePct}%** — not a compliance score`,
-  ]);
-  out += '\n' + h('Top open risks', 2);
-  const top = data.risks
-    .filter(isOpenRisk)
+  const attention = data.systems.filter((s) => s.currentStatus !== 'archived' && (
+    s.legalReviewNeeded ||
+    s.privacyReviewNeeded ||
+    s.securityReviewNeeded ||
+    s.vendorReviewNeeded ||
+    !s.nextReviewDate
+  ));
+  const openGaps = activeGapActions(data)
     .sort((a, b) => severityRank(b.severity) - severityRank(a.severity))
-    .slice(0, 8)
-    .map((r) => [
-      r.riskTitle,
-      data.systems.find((s) => s.id === r.affectedAISystemId)?.systemName ?? '—',
-      r.severity,
-      r.owner || '—',
-    ]);
-  out += table(['Risk', 'System', 'Severity', 'Owner'], top);
-  return out;
-}
+    .slice(0, 8);
 
-function severityRank(s: string): number {
-  return { low: 0, medium: 1, high: 2, critical: 3 }[s] ?? 0;
+  let out = h('Management Overview Report') + meta(data, 'Management Overview Report') + '\n';
+  out += h('Executive summary', 2);
+  out += 'This report gives a short leadership view of the fictional AI portfolio: systems needing review, open risks, evidence coverage, incidents, and priority gaps.\n\n';
+
+  out += h('Portfolio snapshot', 2);
+  out += list([
+    `Total active AI systems: **${stats.totalSystems}**`,
+    `Systems needing review: **${attention.length}**`,
+    `Possible elevated/high-review areas: **${stats.possibleHighRisk}**`,
+    `Open high / critical risks: **${stats.openHighRisks} / ${stats.openCriticalRisks}**`,
+    `Open incidents/issues: **${stats.openIncidents}**`,
+    `Evidence coverage: **${stats.coveragePct}%** - not a compliance score`,
+    `Overdue reviews: **${stats.overdueReviews}**`,
+    `Open gap actions: **${stats.openGapActions}**`,
+  ]);
+
+  out += '\n' + h('Key gaps', 2);
+  out += table(
+    ['Gap action', 'System', 'Severity', 'Owner', 'Due'],
+    openGaps.map((g) => [g.title, systemName(data, g.affectedAISystemId), g.severity, g.owner || '—', formatDate(g.dueDate)])
+  );
+
+  out += '\n' + h('Recommended next actions', 2);
+  const next = new Set<string>();
+  if (stats.openGapActions) next.add('Review open gap actions and assign owners/due dates where missing.');
+  if (stats.controlsWithoutEvidence) next.add('Prioritize controls that require evidence but have no usable evidence linked.');
+  if (stats.openHighRisks || stats.openCriticalRisks) next.add('Review open high/critical risks with system owners.');
+  if (stats.openIncidents) next.add('Confirm incident follow-up actions and lessons learned.');
+  if (stats.overdueReviews) next.add('Update overdue system, risk, control, evidence, decision, or gap-action reviews.');
+  out += list([...next]);
+  return out;
 }
 
 /* ------------------------------------------------------------------ */
@@ -264,89 +286,125 @@ export function singleSystemAuditPack(data: WorkspaceData, system: AISystem): st
   const incidents = data.incidents.filter((i) => i.affectedAISystemId === system.id);
   const gaps = systemGaps(system, data);
   const cov = systemCoverage(system, data);
+  const gapActions = activeGapActions(data, system.id);
 
-  let out = h(`Audit Pack — ${system.systemName}`) + meta(data, 'Single-System Audit Pack') + '\n';
+  let out = h(`Single-System Audit Pack - ${system.systemName}`) + meta(data, 'Single-System Audit Pack') + '\n';
 
-  out += h('1. System summary', 2);
+  out += h('1. Disclaimer', 2);
+  out += `${DISCLAIMER}\n\n`;
+
+  out += h('2. AI System Overview', 2);
   out += list([
-    `**Owner:** ${system.owner || '—'} (${system.businessUnit || '—'})`,
-    `**Purpose:** ${system.businessPurpose || '—'}`,
-    `**Status:** ${SYSTEM_STATUS_LABELS[system.currentStatus]}`,
-    `**Risk band:** ${RISK_CATEGORY_LABELS[system.riskCategory]} _(not a legal determination)_`,
-    `**Model / provider:** ${system.modelType || '—'} / ${system.vendorOrProvider || '—'}`,
-    `**Deployment:** ${system.deploymentEnvironment || '—'} (${system.deploymentRegion || '—'})`,
-    `**Autonomy:** ${system.autonomyLevel}; human review required: ${system.humanReviewRequired}`,
-    `**Personal data:** ${system.personalDataInvolved}; sensitive data: ${system.sensitiveDataInvolved}`,
-    `**Human oversight owner:** ${system.humanOversightOwner || '—'}`,
-    `**Last / next review:** ${formatDate(system.lastReviewDate)} / ${formatDate(system.nextReviewDate)}`,
+    `System: **${system.systemName}**`,
+    `Description: ${system.description || '—'}`,
+    `Status: ${SYSTEM_STATUS_LABELS[system.currentStatus]}`,
+    `Risk band: ${RISK_CATEGORY_LABELS[system.riskCategory]} (not a legal determination)`,
   ]);
 
-  out += '\n' + h('2. Risk classification helper output', 2);
+  out += '\n' + h('3. Business Purpose', 2);
+  out += `${system.businessPurpose || '_No business purpose recorded._'}\n`;
+
+  out += '\n' + h('4. Ownership and Review Dates', 2);
+  out += list([
+    `Owner: ${system.owner || '—'}`,
+    `Business unit: ${system.businessUnit || '—'}`,
+    `Human oversight owner: ${system.humanOversightOwner || '—'}`,
+    `Last review: ${formatDate(system.lastReviewDate)}`,
+    `Next review: ${formatDate(system.nextReviewDate)}`,
+  ]);
+
+  out += '\n' + h('5. Deployment Context', 2);
+  out += list([
+    `Use: ${system.internalOrExternalUse}`,
+    `Customer-facing: ${system.customerFacing ? 'Yes' : 'No'}`,
+    `Model / provider: ${system.modelType || '—'} / ${system.vendorOrProvider || '—'}`,
+    `Deployment: ${system.deploymentEnvironment || '—'} (${system.deploymentRegion || '—'})`,
+    `Autonomy: ${system.autonomyLevel}`,
+    `Human review required: ${system.humanReviewRequired}`,
+  ]);
+
+  out += '\n' + h('6. Data Used', 2);
+  out += list([
+    `Data used: ${system.dataUsed || '—'}`,
+    `Data sources: ${system.dataSources || '—'}`,
+    `Data provenance known: ${system.dataProvenanceKnown}`,
+    `Training data: ${system.trainingDataUsed || '—'}`,
+    `Inference data: ${system.inferenceDataUsed || '—'}`,
+  ]);
+
+  out += '\n' + h('7. Personal/Sensitive Data Flags', 2);
+  out += list([
+    `Personal data involved: ${system.personalDataInvolved}`,
+    `Sensitive data involved: ${system.sensitiveDataInvolved}`,
+    `Privacy review recommended: ${system.privacyReviewNeeded ? 'Yes' : 'No'}`,
+  ]);
+
+  out += '\n' + h('8. Risk Classification Helper Result', 2);
   if (system.classification) {
     const c = system.classification;
-    out += `**Suggested band:** ${RISK_CATEGORY_LABELS[c.suggestedCategory]}\n\n`;
-    out += `${c.summary}\n\n`;
-    const flags = Object.entries(c.reviewFlags)
-      .filter(([, v]) => v)
-      .map(([k]) => k);
-    out += `**Review flags:** ${flags.length ? flags.join(', ') : 'none'}\n\n`;
-    out += '**Recommended next actions:**\n' + list(c.recommendedActions);
+    const flags = Object.entries(c.reviewFlags).filter(([, v]) => v).map(([k]) => k);
+    out += list([
+      `Suggested band: ${RISK_CATEGORY_LABELS[c.suggestedCategory]}`,
+      `Summary: ${c.summary}`,
+      `Review flags: ${flags.length ? flags.join(', ') : 'none'}`,
+    ]);
+    out += '**Recommended helper actions:**\n' + list(c.recommendedActions);
     out += `\n> ${HELPER_DISCLAIMER}\n`;
   } else {
     out += '_Risk Classification Helper has not been run for this system yet._\n';
   }
 
-  out += '\n' + h('3. Review flags', 2);
-  out += list(
-    [
-      system.legalReviewNeeded && 'Legal Review Recommended',
-      system.privacyReviewNeeded && 'Privacy Review Recommended',
-      system.securityReviewNeeded && 'Security Review Recommended',
-      system.vendorReviewNeeded && 'Vendor Review Recommended',
-      system.humanOversightReviewNeeded && 'Human Oversight Review Recommended',
-    ].filter(Boolean) as string[]
-  );
+  out += '\n' + h('9. Review Flags', 2);
+  out += list([
+    system.legalReviewNeeded ? 'Legal review recommended' : '',
+    system.privacyReviewNeeded ? 'Privacy review recommended' : '',
+    system.securityReviewNeeded ? 'Security review recommended' : '',
+    system.vendorReviewNeeded ? 'Vendor review recommended' : '',
+    system.humanOversightReviewNeeded ? 'Human-oversight review recommended' : '',
+  ].filter(Boolean));
 
-  out += '\n' + h('4. Linked risks', 2);
-  out += table(
-    ['Risk', 'Severity', 'Status', 'Owner'],
-    risks.map((r) => [r.riskTitle, r.severity, r.status, r.owner || '—'])
-  );
+  out += '\n' + h('10. Linked Risks', 2);
+  out += table(['Risk', 'Severity', 'Status', 'Owner', 'Mitigation'], risks.map((r) => [r.riskTitle, r.severity, r.status, r.owner || '—', r.mitigation || '—']));
 
-  out += '\n' + h('5. Linked controls', 2);
-  out += table(
-    ['Control', 'Category', 'Status', 'Owner'],
-    controls.map((c) => [c.controlTitle, c.controlCategory, c.status, c.owner || '—'])
-  );
+  out += '\n' + h('11. Linked Controls', 2);
+  out += table(['Control', 'Category', 'Status', 'Owner'], controls.map((c) => [c.controlTitle, c.controlCategory, c.status, c.owner || '—']));
 
-  out += '\n' + h('6. Linked evidence', 2);
-  out += table(
-    ['Evidence', 'Type', 'Status', 'Reference'],
-    evidence.map((e) => [e.evidenceTitle, e.evidenceType, e.status, e.fileReferenceOrUrlOrNote || '—'])
-  );
+  out += '\n' + h('12. Linked Evidence', 2);
+  out += table(['Evidence', 'Type', 'Status', 'Owner', 'Reference'], evidence.map((e) => [e.evidenceTitle, e.evidenceType, e.status, e.owner || '—', e.fileReferenceOrUrlOrNote || '—']));
 
-  out += '\n' + h('7. Open gaps', 2);
+  out += '\n' + h('13. Missing Evidence', 2);
   out += `_Evidence Coverage: ${cov.pct}% (${cov.documented}/${cov.expected})._\n\n`;
-  out += list(gaps.map((g) => `${g.severity === 'warn' ? '⚠ ' : ''}${g.message}`));
+  out += list(cov.missingTypes.map((t) => `Missing: ${t}`));
 
-  out += '\n' + h('8. Linked decisions', 2);
-  out += table(
-    ['Decision', 'Treatment', 'Owner', 'Date'],
-    decisions.map((d) => [d.decisionTitle, d.riskTreatment, d.decisionOwner || '—', formatDate(d.date)])
-  );
+  out += '\n' + h('14. Open Gap Actions', 2);
+  out += table(['Action', 'Gap type', 'Severity', 'Status', 'Owner', 'Due'], gapActions.map((g) => [g.title, g.gapType, g.severity, g.status, g.owner || '—', formatDate(g.dueDate)]));
 
-  out += '\n' + h('9. Linked incidents', 2);
-  out += table(
-    ['Incident', 'Type', 'Severity', 'Status'],
-    incidents.map((i) => [i.incidentTitle, i.type, i.severity, i.status])
-  );
+  out += '\n' + h('15. Linked Decisions', 2);
+  out += table(['Decision', 'Treatment', 'Owner', 'Date', 'Reason'], decisions.map((d) => [d.decisionTitle, d.riskTreatment, d.decisionOwner || '—', formatDate(d.date), d.reason || '—']));
 
-  out += '\n' + h('10. Recommended next actions', 2);
+  out += '\n' + h('16. Linked Incidents / Issues', 2);
+  out += table(['Incident', 'Type', 'Severity', 'Status', 'Follow-up'], incidents.map((i) => [i.incidentTitle, i.type, i.severity, i.status, i.followUpActions || '—']));
+
+  out += '\n' + h('17. Framework Mapping Summary', 2);
+  out += list([
+    `System framework tags: ${system.frameworkTags.length ? system.frameworkTags.join(', ') : '—'}`,
+    `Control framework tags: ${[...new Set(controls.flatMap((c) => c.frameworkTags))].join(', ') || '—'}`,
+    `Evidence framework tags: ${[...new Set(evidence.flatMap((e) => e.frameworkTags))].join(', ') || '—'}`,
+  ]);
+
+  out += '\n' + h('18. Recommended Next Actions', 2);
   const actions = new Set<string>();
   if (system.classification) system.classification.recommendedActions.forEach((a) => actions.add(a));
   gaps.filter((g) => g.severity === 'warn').forEach((g) => actions.add(`Address: ${g.message}`));
+  gapActions.forEach((g) => actions.add(`Resolve gap action: ${g.title}`));
   if (!system.nextReviewDate) actions.add('Set a next review date.');
   out += list([...actions]);
+
+  out += '\n' + h('19. Review Notes', 2);
+  out += `${system.notes || '_No review notes recorded._'}\n`;
+
+  out += '\n' + h('20. Export Timestamp', 2);
+  out += `${new Date().toISOString()}\n`;
 
   return out;
 }
@@ -374,13 +432,13 @@ export const REPORTS: ReportDef[] = [
   {
     id: 'audit-readiness',
     title: 'Audit Readiness',
-    description: 'Portfolio status, pending reviews, and evidence coverage.',
+    description: 'Portfolio status, pending reviews, evidence coverage, and open gap actions.',
     generate: auditReadinessReport,
   },
   {
     id: 'gap-report',
     title: 'Control & Evidence Gap',
-    description: 'Controls missing evidence and per-system evidence gaps.',
+    description: 'Controls missing evidence, per-system evidence gaps, and open gap actions.',
     generate: controlEvidenceGapReport,
   },
   {
@@ -392,7 +450,7 @@ export const REPORTS: ReportDef[] = [
   {
     id: 'management-overview',
     title: 'Management Overview',
-    description: 'Executive summary of the AI portfolio, risk and assurance.',
+    description: 'Leadership summary of portfolio status, risk, evidence, incidents, and priority gaps.',
     generate: managementOverviewReport,
   },
 ];

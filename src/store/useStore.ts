@@ -8,6 +8,7 @@ import type {
   Evidence,
   FrameworkId,
   FrameworkNote,
+  GapAction,
   Incident,
   RequirementArea,
   WorkspaceData,
@@ -53,6 +54,10 @@ interface StoreState {
   upsertIncident: (i: Incident) => void;
   patchIncident: (id: string, patch: Partial<Incident>) => void;
   removeIncident: (id: string) => void;
+
+  upsertGapAction: (g: GapAction) => void;
+  patchGapAction: (id: string, patch: Partial<GapAction>) => void;
+  removeGapAction: (id: string) => void;
 
   upsertFrameworkNote: (
     framework: FrameworkId,
@@ -137,6 +142,9 @@ export const useStore = create<StoreState>()(
               incidents: data.incidents.map((i) =>
                 i.affectedAISystemId === id ? { ...i, affectedAISystemId: '' } : i
               ),
+              gapActions: (data.gapActions ?? []).map((g) =>
+                g.affectedAISystemId === id ? { ...g, affectedAISystemId: '' } : g
+              ),
             },
             lastSaved: nowISO(),
           };
@@ -196,6 +204,9 @@ export const useStore = create<StoreState>()(
               ...i,
               relatedRiskIds: i.relatedRiskIds.filter((x) => x !== id),
             })),
+            gapActions: (s.data.gapActions ?? []).map((g) =>
+              g.linkedRiskId === id ? { ...g, linkedRiskId: '' } : g
+            ),
           },
           lastSaved: nowISO(),
         })),
@@ -228,6 +239,9 @@ export const useStore = create<StoreState>()(
               ...d,
               linkedControlIds: d.linkedControlIds.filter((x) => x !== id),
             })),
+            gapActions: (s.data.gapActions ?? []).map((g) =>
+              g.linkedControlId === id ? { ...g, linkedControlId: '' } : g
+            ),
           },
           lastSaved: nowISO(),
         })),
@@ -260,6 +274,9 @@ export const useStore = create<StoreState>()(
               ...d,
               linkedEvidenceIds: d.linkedEvidenceIds.filter((x) => x !== id),
             })),
+            gapActions: (s.data.gapActions ?? []).map((g) =>
+              g.linkedEvidenceId === id ? { ...g, linkedEvidenceId: '' } : g
+            ),
           },
           lastSaved: nowISO(),
         })),
@@ -295,6 +312,23 @@ export const useStore = create<StoreState>()(
       removeIncident: (id) =>
         set((s) => ({
           data: { ...s.data, incidents: s.data.incidents.filter((x) => x.id !== id) },
+          lastSaved: nowISO(),
+        })),
+
+      /* ---- gap actions ---- */
+      upsertGapAction: (g) =>
+        set((s) => ({
+          data: { ...s.data, gapActions: upsert(s.data.gapActions ?? [], touch(g)) },
+          lastSaved: nowISO(),
+        })),
+      patchGapAction: (id, p) =>
+        set((s) => ({
+          data: { ...s.data, gapActions: patch(s.data.gapActions ?? [], id, p) },
+          lastSaved: nowISO(),
+        })),
+      removeGapAction: (id) =>
+        set((s) => ({
+          data: { ...s.data, gapActions: (s.data.gapActions ?? []).filter((x) => x.id !== id) },
           lastSaved: nowISO(),
         })),
 

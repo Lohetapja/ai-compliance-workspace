@@ -4,6 +4,7 @@ import type {
   Control,
   Decision,
   Evidence,
+  GapAction,
   Incident,
 } from '../types';
 import { computeSeverity } from '../lib/severity';
@@ -121,6 +122,27 @@ export function blankEvidence(systemId = ''): Evidence {
     status: 'draft',
     reviewDate: '',
     frameworkTags: [],
+    notes: '',
+    createdAt: ts,
+    updatedAt: ts,
+  };
+}
+
+export function blankGapAction(systemId = ''): GapAction {
+  const ts = nowISO();
+  return {
+    id: newId('gap'),
+    title: '',
+    description: '',
+    affectedAISystemId: systemId,
+    gapType: 'Missing evidence',
+    severity: 'medium',
+    owner: '',
+    dueDate: '',
+    status: 'open',
+    linkedControlId: '',
+    linkedEvidenceId: '',
+    linkedRiskId: '',
     notes: '',
     createdAt: ts,
     updatedAt: ts,

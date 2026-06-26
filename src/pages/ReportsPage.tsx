@@ -19,12 +19,13 @@ export function ReportsPage() {
   }
 
   const auditSystem = data.systems.find((s) => s.id === auditSystemId);
+  const auditPack = auditSystem ? singleSystemAuditPack(data, auditSystem) : '';
 
   return (
     <>
       <PageHeader
         title="Reports"
-        description="Export working governance reports as Markdown. Every report carries a disclaimer — these are working artifacts, not compliance certifications."
+        description="Export working governance reports as Markdown. Every report carries a disclaimer; these are working artifacts, not compliance certifications."
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -51,7 +52,6 @@ export function ReportsPage() {
         ))}
       </div>
 
-      {/* Single-system audit pack */}
       <Card className="mt-6 p-5">
         <div className="flex items-start gap-2">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet/15 text-violet">
@@ -60,8 +60,8 @@ export function ReportsPage() {
           <div>
             <h3 className="text-sm font-semibold text-ink">Single-System Audit Pack</h3>
             <p className="mt-0.5 text-[11px] text-faint">
-              A complete pack for one system: summary, helper output, risks, controls, evidence,
-              gaps, decisions, incidents, review dates and recommended next actions.
+              Professional Markdown pack for one system: overview, purpose, ownership, risk helper output,
+              linked risks, controls, evidence, missing evidence, gap actions, decisions, incidents, framework summary, and next actions.
             </p>
           </div>
         </div>
@@ -74,18 +74,25 @@ export function ReportsPage() {
               ))}
             </Select>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
               disabled={!auditSystem}
-              onClick={() => auditSystem && open(`Audit Pack — ${auditSystem.systemName}`, `audit-pack-${slugify(auditSystem.systemName)}.md`, singleSystemAuditPack(data, auditSystem))}
+              onClick={() => auditSystem && open(`Audit Pack - ${auditSystem.systemName}`, `audit-pack-${slugify(auditSystem.systemName)}.md`, auditPack)}
             >
               Preview
             </Button>
             <Button
+              variant="secondary"
+              disabled={!auditSystem}
+              onClick={() => navigator.clipboard?.writeText(auditPack)}
+            >
+              Copy Markdown
+            </Button>
+            <Button
               variant="primary"
               disabled={!auditSystem}
-              onClick={() => auditSystem && downloadText(`audit-pack-${slugify(auditSystem.systemName)}.md`, singleSystemAuditPack(data, auditSystem))}
+              onClick={() => auditSystem && downloadText(`audit-pack-${slugify(auditSystem.systemName)}.md`, auditPack)}
             >
               <Icon name="download" size={13} /> Download pack
             </Button>
@@ -103,7 +110,7 @@ export function ReportsPage() {
           footer={
             <>
               <Button variant="ghost" onClick={() => navigator.clipboard?.writeText(preview.content)}>
-                Copy
+                Copy Markdown
               </Button>
               <Button variant="primary" onClick={() => downloadText(preview.file, preview.content)}>
                 <Icon name="download" size={14} /> Download .md

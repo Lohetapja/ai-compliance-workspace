@@ -88,6 +88,17 @@ export function reviewItems(data: WorkspaceData): ReviewItem[] {
         owner: i.owner,
       });
   }
+  for (const g of data.gapActions ?? []) {
+    if (g.dueDate && g.status !== 'done' && g.status !== 'accepted-risk')
+      items.push({
+        kind: 'gapAction',
+        id: g.id,
+        title: g.title,
+        date: g.dueDate,
+        state: reviewState(g.dueDate),
+        owner: g.owner,
+      });
+  }
   return items.sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -128,6 +139,9 @@ export interface DashboardStats {
   controlsWithoutEvidence: number;
   missingEvidenceCount: number;
   openIncidents: number;
+  openGapActions: number;
+  overdueGapActions: number;
+  highSeverityGapActions: number;
   coveragePct: number;
   coverageDocumented: number;
   coverageExpected: number;
@@ -153,6 +167,10 @@ export function dashboardStats(data: WorkspaceData): DashboardStats {
   );
 
   const openRisks = data.risks.filter(isOpenRisk);
+  const gapActions = data.gapActions ?? [];
+  const openGapActions = gapActions.filter(
+    (g) => g.status !== 'done' && g.status !== 'accepted-risk'
+  );
 
   return {
     totalSystems: active.length,
@@ -178,6 +196,9 @@ export function dashboardStats(data: WorkspaceData): DashboardStats {
     openIncidents: data.incidents.filter(
       (i) => i.status !== 'resolved' && i.status !== 'closed'
     ).length,
+    openGapActions: openGapActions.length,
+    overdueGapActions: openGapActions.filter((g) => reviewState(g.dueDate) === 'overdue').length,
+    highSeverityGapActions: openGapActions.filter((g) => g.severity === 'high' || g.severity === 'critical').length,
     coveragePct: coverage.pct,
     coverageDocumented: coverage.documented,
     coverageExpected: coverage.expected,
@@ -205,9 +226,26 @@ export function systemsNeedingAttention(data: WorkspaceData): SystemAttention[] 
       if (!s.nextReviewDate) reasons.push('No review date');
       if (s.legalReviewNeeded) reasons.push('Legal review');
       if (s.privacyReviewNeeded) reasons.push('Privacy review');
+      if (s.securityReviewNeeded) reasons.push('Security review');
+      if (s.vendorReviewNeeded) reasons.push('Vendor review');
+      if (s.personalDataInvolved === 'yes' && !s.privacyReviewNeeded) reasons.push('Privacy review recommended');
+      if (s.customerFacing && s.loggingEnabled !== 'yes') reasons.push('Customer-facing logging review');
       if (!s.humanOversightOwner) reasons.push('No oversight owner');
+      if (s.humanReviewRequired === 'yes' && !s.humanOversightOwner) reasons.push('Human oversight owner needed');
       if (s.loggingEnabled !== 'yes') reasons.push('No logging');
       if (s.auditTrailAvailable !== 'yes') reasons.push('No audit trail');
+      const openHighRisks = data.risks.filter(
+        (r) => r.affectedAISystemId === s.id && isOpenRisk(r) && (r.severity === 'high' || r.severity === 'critical')
+      );
+      if (openHighRisks.length) reasons.push('Open high risk');
+      const missingEvidence = workspaceCoverage(data).perSystem.find((c) => c.systemId === s.id)?.missingTypes.length ?? 0;
+      if (missingEvidence) reasons.push('Evidence missing');
+      const openIncidents = data.incidents.filter((i) => i.affectedAISystemId === s.id && i.status !== 'resolved' && i.status !== 'closed');
+      if (openIncidents.length) reasons.push('Open incident');
+      const openGaps = (data.gapActions ?? []).filter(
+        (g) => g.affectedAISystemId === s.id && g.status !== 'done' && g.status !== 'accepted-risk'
+      );
+      if (openGaps.length) reasons.push('Open gap action');
       return { id: s.id, name: s.systemName, owner: s.owner, reasons };
     })
     .filter((x) => x.reasons.length > 0);

@@ -14,6 +14,8 @@ import { reviewState } from '../lib/dates';
 import { systemCoverage } from '../lib/coverage';
 import { SystemForm } from '../components/forms/SystemForm';
 import { blankSystem } from '../data/factories';
+import { AI_SYSTEM_TEMPLATES, systemFromTemplate } from '../data/templates';
+import { Modal } from '../components/ui/Modal';
 
 export function SystemsPage() {
   const data = useStore((s) => s.data);
@@ -25,6 +27,7 @@ export function SystemsPage() {
   const [status, setStatus] = useState('');
   const [owner, setOwner] = useState('');
   const [flag, setFlag] = useState('');
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const owners = useMemo(
     () => [...new Set(data.systems.map((s) => s.owner).filter(Boolean))].sort(),
@@ -97,9 +100,14 @@ export function SystemsPage() {
         title="AI Systems"
         description="Inventory of AI systems: what they are, who owns them, what data they use, and what review they need."
         actions={
-          <Button variant="primary" onClick={() => setEditing(blankSystem())}>
-            <Icon name="plus" /> New system
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => setShowTemplates(true)}>
+              <Icon name="copy" size={14} /> Create from template
+            </Button>
+            <Button variant="primary" onClick={() => setEditing(blankSystem())}>
+              <Icon name="plus" /> New system
+            </Button>
+          </div>
         }
       />
 
@@ -111,6 +119,7 @@ export function SystemsPage() {
           action={
             <div className="flex gap-2">
               <Button variant="primary" onClick={() => setEditing(blankSystem())}>Add a system</Button>
+              <Button variant="secondary" onClick={() => setShowTemplates(true)}>Use template</Button>
               <Button variant="secondary" onClick={loadSampleData}>Load sample data</Button>
             </div>
           }
@@ -169,6 +178,32 @@ export function SystemsPage() {
       )}
 
       {editing && <SystemForm initial={editing} onClose={() => setEditing(null)} />}
+
+      {showTemplates && (
+        <Modal open onClose={() => setShowTemplates(false)} title="Create AI system from template" subtitle="Templates provide safe starter records. Review and edit them before treating them as real governance documentation." size="xl">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {AI_SYSTEM_TEMPLATES.map((t) => (
+              <button
+                key={t.templateName}
+                onClick={() => {
+                  setShowTemplates(false);
+                  setEditing(systemFromTemplate(t));
+                }}
+                className="rounded-lg border border-border bg-panel-2 p-3 text-left hover:border-border-strong hover:bg-elevated"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-ink">{t.templateName}</div>
+                    <p className="mt-1 text-[11px] leading-snug text-faint">{t.shortDescription}</p>
+                  </div>
+                  {t.reviewNote && <Chip tone="warn">Review carefully</Chip>}
+                </div>
+                {t.reviewNote && <p className="mt-2 text-[11px] leading-snug text-warn">{t.reviewNote}</p>}
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
     </>
   );
 }
