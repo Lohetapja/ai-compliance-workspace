@@ -22,8 +22,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
+      # Configures GitHub Pages and, when account/org policy allows, enables it
+      # automatically so the deploy step does not 404 on a repo that has never
+      # had Pages turned on. If auto-enable is blocked, set Settings → Pages →
+      # Source → "GitHub Actions" once, then re-run.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - run: npm ci
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
