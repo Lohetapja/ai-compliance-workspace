@@ -74,7 +74,8 @@ core review trail connected:
 - **Evidence freshness** (Fresh / Due Soon / Expired / Missing Review Date) based on review dates
 - Framework Mapping notes
 - **Research Sources** page (high-level learning references with a verify-with-professionals disclaimer)
-- Markdown report preview and download, including a **Framework Lens Summary Report**
+- Markdown report preview and download, including **Framework Lens Summary**, **Vendor Risk Summary**, and **Open Actions** reports
+- **Appearance settings** (theme dark/light/system, density, text size, high-contrast mode) stored per-browser
 - Single-system audit pack export
 - JSON import/export for local backups (includes use cases and vendors)
 - Load/reset fictional sample data
@@ -111,11 +112,11 @@ core review trail connected:
 | Gap Actions | Tracks missing-evidence/review follow-up tasks with owner, severity, due date, and status. |
 | Use Case Intake | Captures proposed AI use cases and the reviews they need; approved intakes convert into AI systems. |
 | Vendor Register | Tracks third-party AI providers, data shared, review statuses, and dependency/exit risk. |
-| Framework Lenses | High-level AI Act / ISO 42001 / GDPR / NIS2 / AI Security / Audit Evidence views — indicative only. |
+| Framework Lenses | High-level AI Act / GDPR / ISO 42001 / NIS2 / AI Security / Audit Evidence / Vendor Risk / Management views — indicative only. |
 | Framework Mapping | Stores high-level notes by framework and requirement area. |
 | Research Sources | Plain-language pointers to learning references (EU AI Act, ISO 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
 | Reports | Generates Markdown working reports, a Framework Lens Summary, and single-system audit packs. |
-| Settings / Data | Manages sample data, JSON backup/restore, and local data clearing. |
+| Settings / Data | Manages sample data, JSON backup/restore, local data clearing, and appearance (theme, density, text size, high contrast). |
 
 ### How this differs from enterprise tools
 

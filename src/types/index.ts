@@ -402,6 +402,10 @@ export interface Evidence {
   fileReferenceOrUrlOrNote: string;
   status: EvidenceStatus;
   reviewDate: ISODate | '';
+  /** Optional hard expiry; drives freshness independently of review date. */
+  expiryDate?: ISODate | '';
+  /** Free-text note on what this evidence is required for. */
+  requiredFor?: string;
   frameworkTags: FrameworkId[];
   notes: string;
   createdAt: ISODate;

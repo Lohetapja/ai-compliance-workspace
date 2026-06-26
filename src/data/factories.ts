@@ -131,6 +131,8 @@ export function blankEvidence(systemId = ''): Evidence {
     fileReferenceOrUrlOrNote: '',
     status: 'draft',
     reviewDate: '',
+    expiryDate: '',
+    requiredFor: '',
     frameworkTags: [],
     notes: '',
     createdAt: ts,

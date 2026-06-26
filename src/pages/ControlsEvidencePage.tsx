@@ -10,8 +10,9 @@ import { DataTable, type Column } from '../components/ui/DataTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Modal } from '../components/ui/Modal';
 import { Chip } from '../components/ui/Chip';
-import { ControlStatusChip, EvidenceStatusChip, ReviewChip } from '../components/ui/statusChips';
+import { ControlStatusChip, EvidenceStatusChip, FreshnessChip, ReviewChip } from '../components/ui/statusChips';
 import { reviewState } from '../lib/dates';
+import { evidenceFreshness } from '../lib/freshness';
 import { controlLacksEvidence } from '../lib/selectors';
 import { cn } from '../components/ui/cn';
 import { ControlForm } from '../components/forms/ControlForm';
@@ -82,16 +83,6 @@ export function ControlsEvidencePage() {
     return names.length ? names.join(', ') : 'No control linked';
   }
 
-  function freshness(e: Evidence): string {
-    if (e.status === 'missing') return 'Missing';
-    if (e.status === 'expired') return 'Expired';
-    if (!e.reviewDate) return 'No review date';
-    const state = reviewState(e.reviewDate);
-    if (state === 'overdue') return 'Review overdue';
-    if (state === 'due-7' || state === 'due-30') return 'Review soon';
-    return 'Current';
-  }
-
   const controlColumns: Column<Control>[] = [
     {
       header: 'Control',
@@ -137,14 +128,7 @@ export function ControlsEvidencePage() {
     { header: 'Status', cell: (e) => <EvidenceStatusChip value={e.status} /> },
     { header: 'Owner', cell: (e) => <span className="text-xs text-muted">{e.owner || '—'}</span> },
     { header: 'Linked control', cell: (e) => <span className="truncate text-xs text-muted">{controlNames(e)}</span> },
-    {
-      header: 'Freshness',
-      cell: (e) => {
-        const state = freshness(e);
-        const bad = ['Missing', 'Expired', 'Review overdue'].includes(state);
-        return <Chip tone={bad ? 'danger' : state === 'Current' ? 'ok' : 'warn'}>{state}</Chip>;
-      },
-    },
+    { header: 'Freshness', cell: (e) => <FreshnessChip value={evidenceFreshness(e)} /> },
     {
       header: 'Review',
       cell: (e) => {

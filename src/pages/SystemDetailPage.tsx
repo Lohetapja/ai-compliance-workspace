@@ -69,15 +69,17 @@ function LinkedPanel({
   onAdd,
   children,
   empty,
+  anchorId,
 }: {
   title: string;
   count: number;
   onAdd: () => void;
   children: React.ReactNode;
   empty: string;
+  anchorId?: string;
 }) {
   return (
-    <Card>
+    <Card id={anchorId} className="scroll-mt-20">
       <CardHeader
         title={`${title} (${count})`}
         actions={
@@ -103,13 +105,27 @@ function Row({ onClick, children }: { onClick: () => void; children: React.React
   );
 }
 
-function TraceStep({ label, count, tone }: { label: string; count: number; tone: Tone }) {
-  return (
-    <span className="inline-flex flex-col items-center rounded-lg border border-border bg-panel-2 px-2.5 py-1.5">
+function TraceStep({ label, count, tone, targetId }: { label: string; count: number; tone: Tone; targetId?: string }) {
+  const inner = (
+    <>
       <span className="text-xs font-medium text-ink">{label}</span>
       <Chip tone={tone} className="mt-0.5">{count}</Chip>
-    </span>
+    </>
   );
+  const cls = 'inline-flex flex-col items-center rounded-lg border border-border bg-panel-2 px-2.5 py-1.5';
+  if (targetId) {
+    return (
+      <button
+        type="button"
+        onClick={() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        className={`${cls} hover:border-border-strong hover:bg-elevated`}
+        title={`Jump to ${label}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+  return <span className={cls}>{inner}</span>;
 }
 
 function TraceArrow() {
@@ -214,17 +230,19 @@ export function SystemDetailPage() {
         <div className="flex flex-wrap items-center gap-1.5 p-4">
           <TraceStep label="AI System" count={1} tone="brand" />
           <TraceArrow />
-          <TraceStep label="Risks" count={risks.length} tone="violet" />
+          <TraceStep label="Risks" count={risks.length} tone="violet" targetId="panel-risks" />
           <TraceArrow />
-          <TraceStep label="Controls" count={controls.length} tone="info" />
+          <TraceStep label="Controls" count={controls.length} tone="info" targetId="panel-controls" />
           <TraceArrow />
-          <TraceStep label="Evidence" count={evidence.length} tone="ok" />
+          <TraceStep label="Evidence" count={evidence.length} tone="ok" targetId="panel-evidence" />
           <TraceArrow />
-          <TraceStep label="Decisions" count={decisions.length} tone="neutral" />
+          <TraceStep label="Decisions" count={decisions.length} tone="neutral" targetId="panel-decisions" />
           <TraceArrow />
-          <TraceStep label="Incidents" count={incidents.length} tone={incidents.length ? 'warn' : 'neutral'} />
+          <TraceStep label="Incidents" count={incidents.length} tone={incidents.length ? 'warn' : 'neutral'} targetId="panel-incidents" />
           <TraceArrow />
-          <button onClick={auditPack} className="rounded-lg border border-border bg-panel-2 px-2.5 py-1.5 text-xs font-medium text-ink hover:border-border-strong hover:text-brand">
+          <TraceStep label="Gap Actions" count={openGapActions.length} tone={openGapActions.length ? 'danger' : 'neutral'} targetId="panel-gaps" />
+          <TraceArrow />
+          <button onClick={auditPack} className="rounded-lg border border-border bg-panel-2 px-2.5 py-1.5 text-xs font-medium text-ink hover:border-border-strong hover:text-brand" title="Download audit pack">
             Reports →
           </button>
         </div>
@@ -288,7 +306,7 @@ export function SystemDetailPage() {
           )}
 
           {/* Linked panels */}
-          <LinkedPanel title="Linked risks" count={risks.length} onAdd={() => setModal({ t: 'risk', e: blankRisk(system.id) })} empty="No risks yet. Add prompt injection, data leakage, or bias risks.">
+          <LinkedPanel anchorId="panel-risks" title="Linked risks" count={risks.length} onAdd={() => setModal({ t: 'risk', e: blankRisk(system.id) })} empty="No risks yet. Add prompt injection, data leakage, or bias risks.">
             {risks.map((r) => (
               <Row key={r.id} onClick={() => setModal({ t: 'risk', e: r })}>
                 <span className="min-w-0 truncate text-sm text-ink">{r.riskTitle}</span>
@@ -297,7 +315,7 @@ export function SystemDetailPage() {
             ))}
           </LinkedPanel>
 
-          <LinkedPanel title="Linked controls" count={controls.length} onAdd={() => setModal({ t: 'control', e: { ...blankControl(system.id) } })} empty="No controls yet. Add oversight, logging, or vendor controls.">
+          <LinkedPanel anchorId="panel-controls" title="Linked controls" count={controls.length} onAdd={() => setModal({ t: 'control', e: { ...blankControl(system.id) } })} empty="No controls yet. Add oversight, logging, or vendor controls.">
             {controls.map((c) => (
               <Row key={c.id} onClick={() => setModal({ t: 'control', e: c })}>
                 <span className="min-w-0 truncate text-sm text-ink">{c.controlTitle}<span className="ml-2 text-xs text-faint">{c.controlCategory}</span></span>
@@ -306,7 +324,7 @@ export function SystemDetailPage() {
             ))}
           </LinkedPanel>
 
-          <LinkedPanel title="Linked evidence" count={evidence.length} onAdd={() => setModal({ t: 'evidence', e: blankEvidence(system.id) })} empty="No evidence yet. Attach a risk assessment, logging config, or model card.">
+          <LinkedPanel anchorId="panel-evidence" title="Linked evidence" count={evidence.length} onAdd={() => setModal({ t: 'evidence', e: blankEvidence(system.id) })} empty="No evidence yet. Attach a risk assessment, logging config, or model card.">
             {evidence.map((e) => (
               <Row key={e.id} onClick={() => setModal({ t: 'evidence', e })}>
                 <span className="min-w-0 truncate text-sm text-ink">{e.evidenceTitle}<span className="ml-2 text-xs text-faint">{e.evidenceType}</span></span>
@@ -316,7 +334,7 @@ export function SystemDetailPage() {
           </LinkedPanel>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <LinkedPanel title="Linked decisions" count={decisions.length} onAdd={() => setModal({ t: 'decision', e: blankDecision(system.id) })} empty="No decisions recorded.">
+            <LinkedPanel anchorId="panel-decisions" title="Linked decisions" count={decisions.length} onAdd={() => setModal({ t: 'decision', e: blankDecision(system.id) })} empty="No decisions recorded.">
               {decisions.map((d) => (
                 <Row key={d.id} onClick={() => setModal({ t: 'decision', e: d })}>
                   <span className="min-w-0 truncate text-sm text-ink">{d.decisionTitle}</span>
@@ -324,7 +342,7 @@ export function SystemDetailPage() {
                 </Row>
               ))}
             </LinkedPanel>
-            <LinkedPanel title="Linked incidents" count={incidents.length} onAdd={() => setModal({ t: 'incident', e: blankIncident(system.id) })} empty="No incidents logged.">
+            <LinkedPanel anchorId="panel-incidents" title="Linked incidents" count={incidents.length} onAdd={() => setModal({ t: 'incident', e: blankIncident(system.id) })} empty="No incidents logged.">
               {incidents.map((i) => (
                 <Row key={i.id} onClick={() => setModal({ t: 'incident', e: i })}>
                   <span className="min-w-0 truncate text-sm text-ink">{i.incidentTitle}</span>
@@ -375,7 +393,7 @@ export function SystemDetailPage() {
             )}
           </Card>
 
-          <Card>
+          <Card id="panel-gaps" className="scroll-mt-20">
             <CardHeader
               title={`Gap actions (${openGapActions.length})`}
               subtitle="Owned follow-ups for missing evidence, reviews, or controls"

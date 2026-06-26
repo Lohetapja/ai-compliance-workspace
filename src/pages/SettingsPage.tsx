@@ -4,9 +4,39 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
-import { Field, Input } from '../components/ui/Field';
+import { Field, Input, Checkbox } from '../components/ui/Field';
 import { downloadJSON } from '../lib/download';
+import { useAppearance } from '../store/useAppearance';
+import { cn } from '../components/ui/cn';
 import type { WorkspaceExport } from '../types';
+
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="inline-flex overflow-hidden rounded-lg border border-border">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={cn(
+            'px-3 py-1.5 text-xs font-medium transition-colors',
+            value === o.value ? 'bg-brand/20 text-brand' : 'text-muted hover:bg-elevated'
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function SettingsPage() {
   const data = useStore((s) => s.data);
@@ -66,6 +96,8 @@ export function SettingsPage() {
           {msg.text}
         </div>
       )}
+
+      <AppearanceCard />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
@@ -187,5 +219,55 @@ export function SettingsPage() {
         </div>
       </Card>
     </>
+  );
+}
+
+function AppearanceCard() {
+  const { theme, density, textSize, highContrast, setTheme, setDensity, setTextSize, setHighContrast, reset } =
+    useAppearance();
+  return (
+    <Card className="mb-4">
+      <CardHeader
+        title="Appearance"
+        subtitle="Display preferences for this browser only (not part of workspace data or exports)."
+        actions={<Button size="sm" variant="ghost" onClick={reset}>Reset</Button>}
+      />
+      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        <Field label="Theme">
+          <Segmented
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: 'dark', label: 'Dark' },
+              { value: 'light', label: 'Light' },
+              { value: 'system', label: 'System' },
+            ]}
+          />
+        </Field>
+        <Field label="Density">
+          <Segmented
+            value={density}
+            onChange={setDensity}
+            options={[
+              { value: 'comfortable', label: 'Comfortable' },
+              { value: 'compact', label: 'Compact' },
+            ]}
+          />
+        </Field>
+        <Field label="Text size">
+          <Segmented
+            value={textSize}
+            onChange={setTextSize}
+            options={[
+              { value: 'normal', label: 'Normal' },
+              { value: 'large', label: 'Large' },
+            ]}
+          />
+        </Field>
+        <div className="flex items-end pb-1">
+          <Checkbox checked={highContrast} onChange={setHighContrast} label="High contrast mode" />
+        </div>
+      </div>
+    </Card>
   );
 }

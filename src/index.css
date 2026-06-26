@@ -47,7 +47,8 @@
     background-color: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 15px;
+    /* rem-based so the appearance "text size"/"density" root font-size scales it */
+    font-size: 0.9375rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -121,4 +122,41 @@
     color: var(--color-muted);
     margin-bottom: 0.3rem;
   }
+}
+
+/*
+  Appearance: optional light theme. Overrides the design tokens so all
+  Tailwind utilities (which reference these custom properties) follow.
+  Semantic colors are darkened slightly to stay legible on light surfaces.
+*/
+html[data-theme='light'] {
+  --color-bg: #eef2f9;
+  --color-panel: #ffffff;
+  --color-panel-2: #f3f6fc;
+  --color-elevated: #e7edf7;
+  --color-border: #d4dded;
+  --color-border-strong: #b4c1d8;
+
+  --color-ink: #101a2c;
+  --color-muted: #46556c;
+  --color-faint: #64748b;
+
+  --color-ok: #059669;
+  --color-info: #2563eb;
+  --color-warn: #b45309;
+  --color-danger: #dc2626;
+  --color-critical: #e11d48;
+  --color-violet: #7c3aed;
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #c4cedd;
+  border-color: var(--color-bg);
+}
+
+/* High contrast: push secondary text toward the primary ink, strengthen borders. */
+html[data-contrast='high'] {
+  --color-muted: var(--color-ink);
+  --color-faint: var(--color-ink);
+  --color-border: var(--color-border-strong);
 }

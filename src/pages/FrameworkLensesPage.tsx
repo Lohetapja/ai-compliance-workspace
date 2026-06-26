@@ -23,18 +23,23 @@ import {
   iso42001Areas,
   nis2Rows,
   securityRelevantRisks,
+  vendorReviewsPending,
 } from '../lib/lenses';
-import type { AISystem } from '../types';
+import { dashboardStats } from '../lib/selectors';
+import { ReviewStatusChip, RiskLevelChip } from '../components/ui/statusChips';
+import { RISK_CATEGORY_LABELS, type AISystem, type RiskCategory } from '../types';
 
-type Lens = 'ai-act' | 'iso' | 'gdpr' | 'nis2' | 'security' | 'evidence';
+type Lens = 'ai-act' | 'gdpr' | 'iso' | 'nis2' | 'security' | 'evidence' | 'vendor' | 'management';
 
 const LENSES: { id: Lens; label: string }[] = [
   { id: 'ai-act', label: 'AI Act View' },
-  { id: 'iso', label: 'ISO 42001 View' },
   { id: 'gdpr', label: 'GDPR View' },
+  { id: 'iso', label: 'ISO 42001 View' },
   { id: 'nis2', label: 'NIS2 View' },
   { id: 'security', label: 'AI Security View' },
   { id: 'evidence', label: 'Audit Evidence View' },
+  { id: 'vendor', label: 'Vendor Risk View' },
+  { id: 'management', label: 'Management View' },
 ];
 
 function SystemLink({ s }: { s: AISystem }) {
@@ -57,6 +62,9 @@ export function FrameworkLensesPage() {
   const nis2 = useMemo(() => nis2Rows(data), [data]);
   const secRisks = useMemo(() => securityRelevantRisks(data), [data]);
   const evidence = useMemo(() => auditEvidenceBuckets(data), [data]);
+  const vendors = data.vendors ?? [];
+  const vendorsPending = useMemo(() => vendorReviewsPending(data), [data]);
+  const stats = useMemo(() => dashboardStats(data), [data]);
 
   return (
     <>
@@ -311,6 +319,76 @@ export function FrameworkLensesPage() {
               </table>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* ---------------- Vendor Risk ---------------- */}
+      {lens === 'vendor' && (
+        <div className="space-y-4">
+          <p className="text-xs text-faint">
+            Vendor / third-party AI risk view — review status and dependency risk for providers. Workflow trackers, not assurances.
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat n={vendors.length} label="Vendors" tone="ok" />
+            <Stat n={vendorsPending.length} label="Reviews pending" tone="warn" />
+            <Stat n={vendors.filter((v) => v.vendorDependencyRisk === 'high').length} label="High dependency" tone="danger" />
+            <Stat n={vendors.filter((v) => v.personalDataShared === 'yes' || v.sensitiveDataShared === 'yes').length} label="Share personal/sensitive" tone="warn" />
+          </div>
+          {vendors.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-faint">No vendors recorded. Add them in the Vendor Register.</p>
+          ) : (
+            vendors.map((v) => (
+              <Card key={v.id} className="p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <Link to="/vendors" className="text-sm font-medium text-ink hover:text-brand hover:underline">{v.vendorName}</Link>
+                    <div className="text-xs text-faint">{v.serviceType || '—'} · {v.region || '—'} · {v.linkedAISystemIds.map((id) => systemName(data, id)).join(', ') || 'no linked systems'}</div>
+                  </div>
+                  <RiskLevelChip value={v.vendorDependencyRisk} />
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                  <span className="text-faint">Contract</span><ReviewStatusChip value={v.contractReviewStatus} />
+                  <span className="text-faint">Privacy</span><ReviewStatusChip value={v.privacyReviewStatus} />
+                  <span className="text-faint">Security</span><ReviewStatusChip value={v.securityReviewStatus} />
+                  <span className="text-faint">DPA</span><ReviewStatusChip value={v.dpaStatus} />
+                  {(v.personalDataShared === 'yes') && <Chip tone="warn">Personal data shared</Chip>}
+                  {(v.sensitiveDataShared === 'yes') && <Chip tone="danger">Sensitive data shared</Chip>}
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ---------------- Management ---------------- */}
+      {lens === 'management' && (
+        <div className="space-y-4">
+          <p className="text-xs text-faint">Management view — a high-level portfolio summary for governance oversight. Indicative only.</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat n={stats.totalSystems} label="Active systems" tone="ok" />
+            <Stat n={stats.possibleHighRisk} label="Possible high-risk" tone="danger" />
+            <Stat n={stats.openHighRisks + stats.openCriticalRisks} label="Open high/critical risks" tone="danger" />
+            <Stat n={stats.openIncidents} label="Open incidents" tone="warn" />
+            <Stat n={stats.overdueReviews} label="Overdue reviews" tone="danger" />
+            <Stat n={stats.legalReview} label="Legal review flagged" tone="warn" />
+            <Stat n={stats.privacyReview} label="Privacy review flagged" tone="warn" />
+            <Stat n={stats.coveragePct} label="Evidence coverage %" tone={stats.coveragePct >= 60 ? 'ok' : 'warn'} />
+          </div>
+          <Card>
+            <CardHeader title="Systems by risk band" subtitle="Indicative only — not a legal classification" />
+            <div className="space-y-2 p-4">
+              {(Object.keys(stats.byRiskCategory) as RiskCategory[]).map((c) => (
+                <div key={c} className="flex items-center justify-between text-sm">
+                  <span className="text-muted">{RISK_CATEGORY_LABELS[c]}</span>
+                  <span className="font-semibold text-ink">{stats.byRiskCategory[c]}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+          <p className="text-xs text-faint">
+            For a downloadable summary, use the <Link to="/reports" className="text-brand hover:underline">Management Overview</Link> and
+            <Link to="/reports" className="text-brand hover:underline"> Framework Lens Summary</Link> reports.
+          </p>
         </div>
       )}
     </>

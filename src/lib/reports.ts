@@ -5,7 +5,7 @@ import {
 } from '../types';
 import { formatDate, relativeReview } from './dates';
 import { systemCoverage, systemGaps, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
-import { dashboardStats, reviewItems } from './selectors';
+import { dashboardStats, reviewItems, isOpenRisk } from './selectors';
 import {
   aiActBuckets,
   auditEvidenceBuckets,
@@ -13,7 +13,9 @@ import {
   iso42001Areas,
   nis2Rows,
   securityRelevantRisks,
+  vendorReviewsPending,
 } from './lenses';
+import { evidenceFreshness, FRESHNESS_LABELS } from './freshness';
 import { HELPER_DISCLAIMER } from './riskHelper';
 
 const DISCLAIMER =
@@ -378,7 +380,17 @@ export function singleSystemAuditPack(data: WorkspaceData, system: AISystem): st
   out += table(['Control', 'Category', 'Status', 'Owner'], controls.map((c) => [c.controlTitle, c.controlCategory, c.status, c.owner || '—']));
 
   out += '\n' + h('12. Linked Evidence', 2);
-  out += table(['Evidence', 'Type', 'Status', 'Owner', 'Reference'], evidence.map((e) => [e.evidenceTitle, e.evidenceType, e.status, e.owner || '—', e.fileReferenceOrUrlOrNote || '—']));
+  out += table(
+    ['Evidence', 'Type', 'Status', 'Freshness', 'Owner', 'Reference'],
+    evidence.map((e) => [
+      e.evidenceTitle,
+      e.evidenceType,
+      e.status,
+      FRESHNESS_LABELS[evidenceFreshness(e)],
+      e.owner || '—',
+      e.fileReferenceOrUrlOrNote || '—',
+    ])
+  );
 
   out += '\n' + h('13. Missing Evidence', 2);
   out += `_Evidence Coverage: ${cov.pct}% (${cov.documented}/${cov.expected})._\n\n`;
@@ -393,14 +405,35 @@ export function singleSystemAuditPack(data: WorkspaceData, system: AISystem): st
   out += '\n' + h('16. Linked Incidents / Issues', 2);
   out += table(['Incident', 'Type', 'Severity', 'Status', 'Follow-up'], incidents.map((i) => [i.incidentTitle, i.type, i.severity, i.status, i.followUpActions || '—']));
 
-  out += '\n' + h('17. Framework Mapping Summary', 2);
+  out += '\n' + h('17. Linked Vendors', 2);
+  const linkedVendors = (data.vendors ?? []).filter((v) => v.linkedAISystemIds.includes(system.id));
+  out += table(
+    ['Vendor', 'Type', 'Dependency', 'Privacy', 'Security', 'DPA'],
+    linkedVendors.map((v) => [v.vendorName, v.serviceType, v.vendorDependencyRisk, v.privacyReviewStatus, v.securityReviewStatus, v.dpaStatus])
+  );
+
+  out += '\n' + h('18. Framework Lens Summary (this system)', 2);
+  const lensFlags = aiActBuckets(data)
+    .filter((b) => b.systems.some((s) => s.id === system.id))
+    .map((b) => b.label);
+  const nis2Flags = nis2Rows(data).find((r) => r.system.id === system.id)?.flags ?? [];
+  const secCount = securityRelevantRisks(data).filter((r) => r.affectedAISystemId === system.id).length;
+  out += list([
+    `AI Act-relevant review areas: ${lensFlags.length ? lensFlags.join('; ') : 'none flagged'}`,
+    `GDPR-relevant: personal data ${system.personalDataInvolved}, sensitive ${system.sensitiveDataInvolved}, DPIA ${system.dpiaStatus ?? '—'}`,
+    `NIS2-relevant flags: ${nis2Flags.length ? nis2Flags.join(', ') : 'none'}`,
+    `AI security-relevant risks (OWASP/MITRE-inspired): ${secCount}`,
+  ]);
+  out += '_High-level orientation only — not a legal or compliance determination._\n';
+
+  out += '\n' + h('19. Framework Mapping Summary', 2);
   out += list([
     `System framework tags: ${system.frameworkTags.length ? system.frameworkTags.join(', ') : '—'}`,
     `Control framework tags: ${[...new Set(controls.flatMap((c) => c.frameworkTags))].join(', ') || '—'}`,
     `Evidence framework tags: ${[...new Set(evidence.flatMap((e) => e.frameworkTags))].join(', ') || '—'}`,
   ]);
 
-  out += '\n' + h('18. Recommended Next Actions', 2);
+  out += '\n' + h('20. Recommended Next Actions', 2);
   const actions = new Set<string>();
   if (system.classification) system.classification.recommendedActions.forEach((a) => actions.add(a));
   gaps.filter((g) => g.severity === 'warn').forEach((g) => actions.add(`Address: ${g.message}`));
@@ -408,10 +441,10 @@ export function singleSystemAuditPack(data: WorkspaceData, system: AISystem): st
   if (!system.nextReviewDate) actions.add('Set a next review date.');
   out += list([...actions]);
 
-  out += '\n' + h('19. Review Notes', 2);
+  out += '\n' + h('21. Review Notes', 2);
   out += `${system.notes || '_No review notes recorded._'}\n`;
 
-  out += '\n' + h('20. Export Timestamp', 2);
+  out += '\n' + h('22. Export Timestamp', 2);
   out += `${new Date().toISOString()}\n`;
 
   return out;
@@ -493,6 +526,92 @@ export function frameworkLensSummaryReport(data: WorkspaceData): string {
   return out;
 }
 
+/* ------------------------------------------------------------------ */
+/* 9. Vendor Risk Summary Report                                       */
+/* ------------------------------------------------------------------ */
+
+export function vendorRiskSummaryReport(data: WorkspaceData): string {
+  const vendors = data.vendors ?? [];
+  let out = h('Vendor Risk Summary Report') + meta(data, 'Vendor Risk Summary Report') + '\n';
+  out += h('Vendors', 2);
+  out += table(
+    ['Vendor', 'Type', 'Region', 'Linked systems', 'Personal', 'Sensitive', 'Dependency'],
+    vendors.map((v) => [
+      v.vendorName,
+      v.serviceType,
+      v.region || '—',
+      v.linkedAISystemIds.map((id) => systemName(data, id)).join(', ') || '—',
+      v.personalDataShared,
+      v.sensitiveDataShared,
+      v.vendorDependencyRisk,
+    ])
+  );
+  out += '\n' + h('Review status', 2);
+  out += table(
+    ['Vendor', 'Contract', 'Privacy', 'Security', 'DPA', 'Review date'],
+    vendors.map((v) => [
+      v.vendorName,
+      v.contractReviewStatus,
+      v.privacyReviewStatus,
+      v.securityReviewStatus,
+      v.dpaStatus,
+      formatDate(v.reviewDate),
+    ])
+  );
+  const pending = vendorReviewsPending(data);
+  out += '\n' + h('Vendor reviews pending', 2);
+  out += list(pending.map((v) => `${v.vendorName} — owner: ${v.owner || '—'}`));
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* 10. Open Actions Report                                             */
+/* ------------------------------------------------------------------ */
+
+export function openActionsReport(data: WorkspaceData): string {
+  let out = h('Open Actions Report') + meta(data, 'Open Actions Report') + '\n';
+
+  out += h('Open gap actions', 2);
+  const gaps = (data.gapActions ?? [])
+    .filter((g) => g.status !== 'done' && g.status !== 'accepted-risk')
+    .sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
+  out += table(
+    ['Action', 'System', 'Severity', 'Status', 'Owner', 'Due'],
+    gaps.map((g) => [g.title, systemName(data, g.affectedAISystemId), g.severity, g.status, g.owner || '—', formatDate(g.dueDate)])
+  );
+
+  out += '\n' + h('Overdue reviews', 2);
+  const overdue = reviewItems(data).filter((r) => r.state === 'overdue');
+  out += table(
+    ['Type', 'Item', 'Owner', 'Due'],
+    overdue.map((r) => [r.kind, r.title, r.owner || '—', relativeReview(r.date)])
+  );
+
+  out += '\n' + h('Open high / critical risks', 2);
+  const risks = data.risks
+    .filter((r) => isOpenRisk(r) && (r.severity === 'high' || r.severity === 'critical'))
+    .sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
+  out += table(
+    ['Risk', 'System', 'Severity', 'Owner'],
+    risks.map((r) => [r.riskTitle, systemName(data, r.affectedAISystemId), r.severity, r.owner || '—'])
+  );
+
+  out += '\n' + h('Open incidents', 2);
+  const incidents = data.incidents.filter((i) => i.status !== 'resolved' && i.status !== 'closed');
+  out += table(
+    ['Incident', 'System', 'Severity', 'Status', 'Owner'],
+    incidents.map((i) => [i.incidentTitle, systemName(data, i.affectedAISystemId), i.severity, i.status, i.owner || '—'])
+  );
+
+  out += '\n' + h('Pending intake reviews', 2);
+  const intake = (data.useCases ?? []).filter((u) => u.status.startsWith('needs-') || u.status === 'submitted');
+  out += table(
+    ['Request', 'Status', 'Requester', 'Target go-live'],
+    intake.map((u) => [u.requestTitle, u.status, u.requester || '—', formatDate(u.targetGoLiveDate)])
+  );
+  return out;
+}
+
 export interface ReportDef {
   id: string;
   title: string;
@@ -542,5 +661,17 @@ export const REPORTS: ReportDef[] = [
     title: 'Framework Lens Summary',
     description: 'AI Act, ISO 42001, GDPR, NIS2, AI security, and audit-evidence views in one summary.',
     generate: frameworkLensSummaryReport,
+  },
+  {
+    id: 'vendor-risk-summary',
+    title: 'Vendor Risk Summary',
+    description: 'Vendors with data shared, review statuses, dependency risk, and pending reviews.',
+    generate: vendorRiskSummaryReport,
+  },
+  {
+    id: 'open-actions',
+    title: 'Open Actions',
+    description: 'Open gap actions, overdue reviews, open high/critical risks, incidents, and pending intake.',
+    generate: openActionsReport,
   },
 ];

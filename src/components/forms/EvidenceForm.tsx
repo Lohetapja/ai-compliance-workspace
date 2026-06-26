@@ -79,6 +79,12 @@ export function EvidenceForm({ initial, onClose }: { initial: Evidence; onClose:
         <Field label="Review date">
           <Input type="date" value={d.reviewDate} onChange={(e) => set('reviewDate', e.target.value)} />
         </Field>
+        <Field label="Expiry date" hint="Optional hard expiry; drives freshness.">
+          <Input type="date" value={d.expiryDate ?? ''} onChange={(e) => set('expiryDate', e.target.value)} />
+        </Field>
+        <Field label="Required for" className="sm:col-span-2" hint="What this evidence supports (e.g. AI Act review area, DPIA, audit).">
+          <Input value={d.requiredFor ?? ''} onChange={(e) => set('requiredFor', e.target.value)} />
+        </Field>
         <Field label="Reference / URL / note" className="sm:col-span-2" hint="Avoid pasting confidential content — a pointer or short note is enough for the demo.">
           <Input value={d.fileReferenceOrUrlOrNote} onChange={(e) => set('fileReferenceOrUrlOrNote', e.target.value)} placeholder="e.g. wiki link, ticket id, or 'note only'" />
         </Field>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
+import { AppearanceManager } from './components/AppearanceManager';
 import { useStore } from './store/useStore';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
@@ -37,7 +38,9 @@ function useFirstRunSeed() {
 export function App() {
   useFirstRunSeed();
   return (
-    <HashRouter>
+    <>
+      <AppearanceManager />
+      <HashRouter>
       <Routes>
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
@@ -61,6 +64,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
-    </HashRouter>
+      </HashRouter>
+    </>
   );
 }
