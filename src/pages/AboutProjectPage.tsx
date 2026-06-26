@@ -31,6 +31,14 @@ export function AboutProjectPage() {
         description="Why this project exists, what it demonstrates, and where its safety boundaries are."
       />
 
+      <div className="mb-4 rounded-xl border border-warn/25 bg-warn/10 px-4 py-3 text-xs leading-relaxed text-warn">
+        <Icon name="warning" size={14} className="mr-1 inline" />
+        This project uses fictional sample data only and does not represent or reference any real company.
+        All organizations, systems, people, risks, incidents, and evidence records in the sample dataset
+        (&ldquo;Fictional AI Test Company&rdquo;) are fictional and created only for demonstration purposes.
+        Any resemblance to real companies, products, people, or incidents is unintentional.
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader title="Why this project exists" />

@@ -114,7 +114,7 @@ export function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Sample data" subtitle="Fictional Northstar AI Cloud dataset" />
+          <CardHeader title="Sample data" subtitle="Fictional AI Test Company dataset" />
           <div className="space-y-3 p-4">
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" onClick={() => { loadSampleData(); flash('ok', 'Loaded sample data.'); }}>
@@ -167,6 +167,12 @@ export function SettingsPage() {
           <p>
             <strong className="text-ink">Demo workspace only.</strong> Do not enter real confidential,
             personal, customer, regulated, or sensitive company data.
+          </p>
+          <p>
+            <strong className="text-ink">Fictional sample data.</strong> All organizations, systems, people,
+            risks, incidents, and evidence records in the sample dataset are fictional and created only for
+            demonstration purposes. Any resemblance to real companies, products, people, or incidents is
+            unintentional.
           </p>
           <p>
             All data is stored only in your browser via <code className="text-brand">localStorage</code>.

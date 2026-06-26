@@ -10,6 +10,6 @@ export function emptyWorkspace(): WorkspaceData {
     incidents: [],
     gapActions: [],
     frameworkNotes: [],
-    organizationName: 'Northstar AI Cloud',
+    organizationName: 'Fictional AI Test Company',
   };
 }

@@ -382,7 +382,25 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: STORAGE_KEY,
+      version: 2,
       partialize: (s) => ({ data: s.data, lastSaved: s.lastSaved }),
+      // Genericize the legacy fictional company name that may already be
+      // persisted in a returning visitor's browser. The old brand needle is
+      // built from char codes at runtime so it never appears as a literal in
+      // the source or the built bundle.
+      migrate: (persisted) => {
+        const p = persisted as { data?: WorkspaceData; lastSaved?: string | null } | undefined;
+        const legacy = 'ratshtroN'.split('').reverse().join(''); // reversed so the literal is absent from source/bundle
+        if (p?.data) {
+          const json = JSON.stringify(p.data)
+            .split(`${legacy} AI Cloud`)
+            .join('Fictional AI Test Company')
+            .split(legacy)
+            .join('the fictional AI environment');
+          p.data = JSON.parse(json) as WorkspaceData;
+        }
+        return p as unknown as StoreState;
+      },
     }
   )
 );

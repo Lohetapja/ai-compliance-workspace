@@ -9,7 +9,7 @@ import { dashboardStats, reviewItems } from './selectors';
 import { HELPER_DISCLAIMER } from './riskHelper';
 
 const DISCLAIMER =
-  '> **Disclaimer.** This report is not legal advice, not a compliance certification, and not a final legal determination. It is a structured governance and audit-preparation summary. Framework references are high-level and require human legal, privacy, security, and governance review.';
+  '> **Disclaimer.** This report is not legal advice, not a compliance certification, and not a final legal determination. It is a structured governance and audit-preparation summary. Framework references are high-level and require human legal, privacy, security, and governance review. Sample data in this demo is fictional; any resemblance to real companies, products, people, or incidents is unintentional.';
 
 function h(title: string, level = 1): string {
   return `${'#'.repeat(level)} ${title}\n`;

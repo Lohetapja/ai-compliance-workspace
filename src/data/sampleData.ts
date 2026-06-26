@@ -11,12 +11,16 @@ import type {
 import { computeSeverity } from '../lib/severity';
 
 /*
- * Fictional demo data for "Northstar AI Cloud", a made-up European AI
- * infrastructure provider (renewable-energy compute, training, inference,
- * model deployment and customer workspaces).
+ * Fictional demo data for "Fictional AI Test Company", a made-up demo
+ * organization used only to show how AI systems, risks, controls, evidence,
+ * decisions, incidents, gaps and reports could be organized in an AI
+ * governance workspace (training, inference, model deployment, workspaces).
  *
- * Everything here is invented. No real company, product, or person.
- * IDs are stable strings so cross-links stay intact across resets.
+ * Everything here is invented. All organizations, systems, people, risks,
+ * incidents and evidence records are fictional and exist only for
+ * demonstration. Any resemblance to real companies, products, people, or
+ * incidents is unintentional. IDs are stable strings so cross-links stay
+ * intact across resets.
  */
 
 /** YYYY-MM-DD offset from today — keeps review-date demos always relevant. */
@@ -178,7 +182,7 @@ export function sampleWorkspace(): WorkspaceData {
       id: 'sys-portal',
       systemName: 'Customer Model Deployment Portal',
       description:
-        'Self-service portal where customers deploy, version and scale their own models on Northstar compute.',
+        'Self-service portal where customers deploy, version and scale their own models on the demo platform compute.',
       businessPurpose: 'Let customers deploy and operate models without manual provisioning.',
       owner: 'Sofia Andersson',
       businessUnit: 'Product — Platform',
@@ -262,9 +266,9 @@ export function sampleWorkspace(): WorkspaceData {
       id: 'sys-scheduler',
       systemName: 'GPU Training Job Scheduler',
       description:
-        'Schedules and prioritises customer and internal training jobs across renewable-powered GPU clusters.',
+        'Schedules and prioritises customer and internal training jobs across shared GPU clusters.',
       businessPurpose:
-        'Maximise utilisation of green compute and honour customer priorities/SLAs.',
+        'Maximise utilisation of shared compute and honour customer priorities/SLAs.',
       owner: 'Henrik Laine',
       businessUnit: 'Infrastructure',
       userGroups: 'Internal platform, customer jobs',
@@ -347,7 +351,7 @@ export function sampleWorkspace(): WorkspaceData {
       id: 'sys-coding',
       systemName: 'Internal Coding Assistant',
       description:
-        'IDE assistant for Northstar engineers that suggests code and explains internal libraries.',
+        'IDE assistant for the fictional company’s engineers that suggests code and explains internal libraries.',
       businessPurpose: 'Improve engineering productivity.',
       owner: 'Henrik Laine',
       businessUnit: 'Engineering',
@@ -1452,6 +1456,6 @@ export function sampleWorkspace(): WorkspaceData {
         updatedAt: ts(-15),
       },
     ],
-    organizationName: 'Northstar AI Cloud',
+    organizationName: 'Fictional AI Test Company',
   };
 }

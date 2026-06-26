@@ -20,7 +20,7 @@ This project turns that structure into a local-first portfolio app. It helps a
 reviewer see how AI governance records can be connected without pretending to
 automate legal judgement.
 
-The bundled sample dataset is fictional: **Northstar AI Cloud**.
+The bundled sample dataset is fictional: **Fictional AI Test Company**.
 
 ## Important disclaimer
 
@@ -31,6 +31,12 @@ framework.
 Risk bands, framework notes, evidence coverage, and reports are working review
 artifacts. They are designed to support human governance, legal, privacy, and
 security review.
+
+This project uses fictional sample data only. It does not represent or reference
+any real company. All organizations, systems, people, risks, incidents, and
+evidence records in the sample dataset are fictional and created only for
+demonstration purposes. Any resemblance to real companies, products, people, or
+incidents is unintentional.
 
 Do not enter real confidential, personal, customer, regulated, or sensitive
 company data into the public demo.
@@ -72,7 +78,7 @@ core review trail connected:
 
 1. Open the live demo.
 2. Review the **Dashboard** for portfolio status and open gaps.
-3. Open **AI Systems** and select a Northstar sample system.
+3. Open **AI Systems** and select a sample system.
 4. Review the system purpose, owner, risk band, review flags, and evidence
    coverage.
 5. Open **Risk Helper** to see structured questions and recommended review
