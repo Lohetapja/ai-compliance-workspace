@@ -15,15 +15,29 @@ export function GapActionForm({
 }) {
   const data = useStore((s) => s.data);
   const upsertGapAction = useStore((s) => s.upsertGapAction);
+  const removeGapAction = useStore((s) => s.removeGapAction);
   const [d, setD] = useState<GapAction>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof GapAction>(k: K, v: GapAction[K]) =>
     setD((p) => ({ ...p, [k]: v }));
   const isNew = !(data.gapActions ?? []).some((g) => g.id === initial.id);
 
   function save() {
-    const fallback = `${d.gapType} action`;
-    upsertGapAction({ ...d, title: d.title.trim() || fallback });
+    const e: Record<string, string> = {};
+    if (!d.title.trim()) e.title = 'Title is required.';
+    if (!d.affectedAISystemId) e.affectedAISystemId = 'Select the affected AI system.';
+    if (!d.owner.trim()) e.owner = 'Owner is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertGapAction({ ...d, title: d.title.trim() });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete gap action "${initial.title}" from local demo data? This cannot be undone.`)) {
+      removeGapAction(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -34,13 +48,14 @@ export function GapActionForm({
       subtitle="Turn a missing review item into a tracked action. This is workflow guidance, not a compliance determination."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save gap action</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Title" className="sm:col-span-2">
+        <Field label="Title" className="sm:col-span-2" required error={errors.title}>
           <Input value={d.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Add logging evidence for support assistant" />
         </Field>
         <Field label="Description" className="sm:col-span-2">
@@ -56,10 +71,10 @@ export function GapActionForm({
             {(['low', 'medium', 'high', 'critical'] as Severity[]).map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
         </Field>
-        <Field label="Owner">
+        <Field label="Owner" required error={errors.owner}>
           <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />
         </Field>
-        <Field label="Due date">
+        <Field label="Due date" hint="Recommended">
           <Input type="date" value={d.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
         </Field>
         <Field label="Status">
@@ -69,7 +84,7 @@ export function GapActionForm({
             ))}
           </Select>
         </Field>
-        <Field label="Linked AI system">
+        <Field label="Linked AI system" required error={errors.affectedAISystemId}>
           <Select value={d.affectedAISystemId} onChange={(e) => set('affectedAISystemId', e.target.value)}>
             <option value="">None selected</option>
             {data.systems.map((s) => <option key={s.id} value={s.id}>{s.systemName}</option>)}

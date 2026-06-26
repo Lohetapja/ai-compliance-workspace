@@ -5,12 +5,16 @@ export function Field({
   label,
   term,
   hint,
+  error,
+  required,
   children,
   className,
 }: {
   label: string;
   term?: string;
   hint?: string;
+  error?: string;
+  required?: boolean;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -18,10 +22,15 @@ export function Field({
     <label className={cn('block', className)}>
       <span className="label flex items-center">
         {label}
+        {required && <span className="ml-0.5 text-danger" aria-hidden="true">*</span>}
         {term && <InfoTip term={term} />}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-faint">{hint}</span>}
+      {error ? (
+        <span className="mt-1 block text-xs font-medium text-danger">{error}</span>
+      ) : hint ? (
+        <span className="mt-1 block text-xs text-faint">{hint}</span>
+      ) : null}
     </label>
   );
 }

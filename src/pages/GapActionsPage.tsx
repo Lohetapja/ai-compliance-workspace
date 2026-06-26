@@ -83,7 +83,7 @@ export function GapActionsPage() {
   ];
 
   function deleteAction(g: GapAction) {
-    if (confirm(`Delete gap action "${g.title}"?`)) removeGapAction(g.id);
+    if (confirm(`Delete gap action "${g.title}" from local demo data? This cannot be undone.`)) removeGapAction(g.id);
   }
 
   return (

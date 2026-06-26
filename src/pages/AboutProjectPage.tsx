@@ -16,6 +16,13 @@ const workflow = [
   'Review again later',
 ];
 
+const PROJECT_LINKS: { label: string; href: string }[] = [
+  { label: 'Live demo', href: 'https://lohetapja.github.io/ai-compliance-workspace/' },
+  { label: 'Project repository', href: 'https://github.com/Lohetapja/ai-compliance-workspace' },
+  { label: 'GitHub', href: 'https://github.com/Lohetapja' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/riivo-m-43530a154/' },
+];
+
 export function AboutProjectPage() {
   return (
     <>
@@ -91,6 +98,23 @@ export function AboutProjectPage() {
               Uses fictional data only and explains localStorage boundaries clearly for reviewers.
             </p>
           </div>
+        </div>
+      </Card>
+
+      <Card className="mt-4">
+        <CardHeader title="Project links" subtitle="Built by Riivo Maadla" />
+        <div className="flex flex-wrap gap-2 p-4">
+          {PROJECT_LINKS.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-panel-2 px-3 py-2 text-sm font-medium text-ink hover:border-border-strong hover:text-brand"
+            >
+              {l.label} <Icon name="external" size={13} />
+            </a>
+          ))}
         </div>
       </Card>
 

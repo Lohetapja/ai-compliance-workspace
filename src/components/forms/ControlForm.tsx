@@ -14,7 +14,9 @@ import { useStore } from '../../store/useStore';
 export function ControlForm({ initial, onClose }: { initial: Control; onClose: () => void }) {
   const data = useStore((s) => s.data);
   const upsertControl = useStore((s) => s.upsertControl);
+  const removeControl = useStore((s) => s.removeControl);
   const [d, setD] = useState<Control>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof Control>(k: K, v: Control[K]) => setD((p) => ({ ...p, [k]: v }));
   const isNew = !data.controls.some((c) => c.id === initial.id);
 
@@ -24,8 +26,21 @@ export function ControlForm({ initial, onClose }: { initial: Control; onClose: (
   }
 
   function save() {
-    upsertControl({ ...d, controlTitle: d.controlTitle.trim() || 'Untitled control' });
+    const e: Record<string, string> = {};
+    if (!d.controlTitle.trim()) e.controlTitle = 'Control title is required.';
+    if (!d.controlCategory) e.controlCategory = 'Category is required.';
+    if (!d.owner.trim()) e.owner = 'Owner is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertControl({ ...d, controlTitle: d.controlTitle.trim() });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete control "${initial.controlTitle}" from local demo data? This cannot be undone.`)) {
+      removeControl(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -36,16 +51,17 @@ export function ControlForm({ initial, onClose }: { initial: Control; onClose: (
       subtitle="A control reduces a risk. Note what evidence proves it is real."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save control</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Control title" className="sm:col-span-2">
+        <Field label="Control title" className="sm:col-span-2" required error={errors.controlTitle}>
           <Input value={d.controlTitle} onChange={(e) => set('controlTitle', e.target.value)} />
         </Field>
-        <Field label="Category">
+        <Field label="Category" required error={errors.controlCategory}>
           <Select value={d.controlCategory} onChange={(e) => set('controlCategory', e.target.value as ControlCategory)}>
             {CONTROL_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </Select>
@@ -60,7 +76,7 @@ export function ControlForm({ initial, onClose }: { initial: Control; onClose: (
         <Field label="Purpose" className="sm:col-span-2">
           <Textarea value={d.purpose} onChange={(e) => set('purpose', e.target.value)} />
         </Field>
-        <Field label="Owner">
+        <Field label="Owner" required error={errors.owner}>
           <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />
         </Field>
         <Field label="Review date">

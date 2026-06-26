@@ -12,7 +12,9 @@ const SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 export function IncidentForm({ initial, onClose }: { initial: Incident; onClose: () => void }) {
   const data = useStore((s) => s.data);
   const upsertIncident = useStore((s) => s.upsertIncident);
+  const removeIncident = useStore((s) => s.removeIncident);
   const [d, setD] = useState<Incident>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof Incident>(k: K, v: Incident[K]) => setD((p) => ({ ...p, [k]: v }));
   const isNew = !data.incidents.some((x) => x.id === initial.id);
 
@@ -22,8 +24,23 @@ export function IncidentForm({ initial, onClose }: { initial: Incident; onClose:
   }
 
   function save() {
-    upsertIncident({ ...d, incidentTitle: d.incidentTitle.trim() || 'Untitled incident' });
+    const e: Record<string, string> = {};
+    if (!d.incidentTitle.trim()) e.incidentTitle = 'Incident title is required.';
+    if (!d.affectedAISystemId) e.affectedAISystemId = 'Select the affected AI system.';
+    if (!d.severity) e.severity = 'Severity is required.';
+    if (!d.status) e.status = 'Status is required.';
+    if (!d.detectionTime) e.detectionTime = 'Detected date is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertIncident({ ...d, incidentTitle: d.incidentTitle.trim() });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete incident "${initial.incidentTitle}" from local demo data? This cannot be undone.`)) {
+      removeIncident(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -34,13 +51,14 @@ export function IncidentForm({ initial, onClose }: { initial: Incident; onClose:
       subtitle="Capture what happened, impact, containment, root cause and lessons learned."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save incident</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Incident title" className="sm:col-span-2">
+        <Field label="Incident title" className="sm:col-span-2" required error={errors.incidentTitle}>
           <Input value={d.incidentTitle} onChange={(e) => set('incidentTitle', e.target.value)} />
         </Field>
         <Field label="Type">
@@ -48,25 +66,25 @@ export function IncidentForm({ initial, onClose }: { initial: Incident; onClose:
             {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </Select>
         </Field>
-        <Field label="Severity">
+        <Field label="Severity" required error={errors.severity}>
           <Select value={d.severity} onChange={(e) => set('severity', e.target.value as Severity)}>
             {SEVERITIES.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
           </Select>
         </Field>
-        <Field label="Affected AI system">
+        <Field label="Affected AI system" required error={errors.affectedAISystemId}>
           <Select value={d.affectedAISystemId} onChange={(e) => set('affectedAISystemId', e.target.value)}>
             <option value="">— none —</option>
             {data.systems.map((s) => <option key={s.id} value={s.id}>{s.systemName}</option>)}
           </Select>
         </Field>
-        <Field label="Status">
+        <Field label="Status" required error={errors.status}>
           <Select value={d.status} onChange={(e) => set('status', e.target.value as IncidentStatus)}>
             {(Object.keys(INCIDENT_STATUS_LABELS) as IncidentStatus[]).map((s) => (
               <option key={s} value={s}>{INCIDENT_STATUS_LABELS[s]}</option>
             ))}
           </Select>
         </Field>
-        <Field label="Detection time">
+        <Field label="Detection time" required error={errors.detectionTime}>
           <Input type="date" value={d.detectionTime} onChange={(e) => set('detectionTime', e.target.value)} />
         </Field>
         <Field label="Owner">

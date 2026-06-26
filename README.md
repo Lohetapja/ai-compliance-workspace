@@ -260,3 +260,16 @@ Not planned for the public demo:
 - OAuth/API-key storage
 - live GRC/SIEM/ticketing integrations
 - real customer data handling
+
+## Author and links
+
+Built by **Riivo Maadla**.
+
+- Live demo: https://lohetapja.github.io/ai-compliance-workspace/
+- Repository: https://github.com/Lohetapja/ai-compliance-workspace
+- GitHub: https://github.com/Lohetapja
+- LinkedIn: https://www.linkedin.com/in/riivo-m-43530a154/
+
+## License
+
+MIT — see [LICENSE](LICENSE).

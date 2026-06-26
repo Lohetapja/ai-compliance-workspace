@@ -26,6 +26,7 @@ export function SystemForm({
 }) {
   const upsertSystem = useStore((s) => s.upsertSystem);
   const [d, setD] = useState<AISystem>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof AISystem>(k: K, v: AISystem[K]) =>
     setD((prev) => ({ ...prev, [k]: v }));
 
@@ -34,10 +35,14 @@ export function SystemForm({
     .data.systems.some((s) => s.id === initial.id);
 
   function save() {
-    if (!d.systemName.trim()) {
-      set('systemName', d.systemName || 'Untitled system');
-    }
-    upsertSystem({ ...d, systemName: d.systemName.trim() || 'Untitled system' });
+    const e: Record<string, string> = {};
+    if (!d.systemName.trim()) e.systemName = 'System name is required.';
+    if (!d.owner.trim()) e.owner = 'Owner is required.';
+    if (!d.currentStatus) e.currentStatus = 'Status is required.';
+    if (!d.riskCategory) e.riskCategory = 'Risk band is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertSystem({ ...d, systemName: d.systemName.trim() });
     onClose();
   }
 
@@ -61,7 +66,7 @@ export function SystemForm({
     >
       <div className="space-y-5">
         <Section title="Identity">
-          <Field label="System name" className="sm:col-span-2">
+          <Field label="System name" className="sm:col-span-2" required error={errors.systemName}>
             <Input value={d.systemName} onChange={(e) => set('systemName', e.target.value)} placeholder="e.g. Customer Support Assistant" />
           </Field>
           <Field label="Description" className="sm:col-span-2">
@@ -70,7 +75,7 @@ export function SystemForm({
           <Field label="Business purpose" className="sm:col-span-2">
             <Textarea value={d.businessPurpose} onChange={(e) => set('businessPurpose', e.target.value)} />
           </Field>
-          <Field label="Owner">
+          <Field label="Owner" required error={errors.owner}>
             <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />
           </Field>
           <Field label="Business unit">
@@ -169,7 +174,7 @@ export function SystemForm({
         </Section>
 
         <Section title="Status & review">
-          <Field label="Current status">
+          <Field label="Current status" required error={errors.currentStatus}>
             <Select value={d.currentStatus} onChange={(e) => set('currentStatus', e.target.value as SystemStatus)}>
               {(Object.keys(SYSTEM_STATUS_LABELS) as SystemStatus[]).map((s) => (
                 <option key={s} value={s}>
@@ -178,7 +183,7 @@ export function SystemForm({
               ))}
             </Select>
           </Field>
-          <Field label="Risk band (indicative, not legal)">
+          <Field label="Risk band (indicative, not legal)" required error={errors.riskCategory}>
             <Select value={d.riskCategory} onChange={(e) => set('riskCategory', e.target.value as RiskCategory)}>
               {(Object.keys(RISK_CATEGORY_LABELS) as RiskCategory[]).map((c) => (
                 <option key={c} value={c}>

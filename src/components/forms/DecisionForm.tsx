@@ -10,7 +10,9 @@ const TREATMENTS: RiskTreatment[] = ['accepted', 'mitigated', 'transferred', 'av
 export function DecisionForm({ initial, onClose }: { initial: Decision; onClose: () => void }) {
   const data = useStore((s) => s.data);
   const upsertDecision = useStore((s) => s.upsertDecision);
+  const removeDecision = useStore((s) => s.removeDecision);
   const [d, setD] = useState<Decision>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof Decision>(k: K, v: Decision[K]) => setD((p) => ({ ...p, [k]: v }));
   const isNew = !data.decisions.some((x) => x.id === initial.id);
 
@@ -20,8 +22,22 @@ export function DecisionForm({ initial, onClose }: { initial: Decision; onClose:
   }
 
   function save() {
-    upsertDecision({ ...d, decisionTitle: d.decisionTitle.trim() || 'Untitled decision' });
+    const e: Record<string, string> = {};
+    if (!d.decisionTitle.trim()) e.decisionTitle = 'Decision title is required.';
+    if (!d.affectedAISystemId) e.affectedAISystemId = 'Select the affected AI system.';
+    if (!d.decisionOwner.trim()) e.decisionOwner = 'Decision owner is required.';
+    if (!d.decisionSummary.trim()) e.decisionSummary = 'Decision summary is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertDecision({ ...d, decisionTitle: d.decisionTitle.trim() });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete decision "${initial.decisionTitle}" from local demo data? This cannot be undone.`)) {
+      removeDecision(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -32,22 +48,23 @@ export function DecisionForm({ initial, onClose }: { initial: Decision; onClose:
       subtitle="Record what was decided, why, who reviewed it, what evidence was used, and when to revisit."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save decision</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Decision title" className="sm:col-span-2">
+        <Field label="Decision title" className="sm:col-span-2" required error={errors.decisionTitle}>
           <Input value={d.decisionTitle} onChange={(e) => set('decisionTitle', e.target.value)} />
         </Field>
         <Field label="Date">
           <Input type="date" value={d.date} onChange={(e) => set('date', e.target.value)} />
         </Field>
-        <Field label="Decision owner">
+        <Field label="Decision owner" required error={errors.decisionOwner}>
           <Input value={d.decisionOwner} onChange={(e) => set('decisionOwner', e.target.value)} />
         </Field>
-        <Field label="Affected AI system">
+        <Field label="Affected AI system" required error={errors.affectedAISystemId}>
           <Select value={d.affectedAISystemId} onChange={(e) => set('affectedAISystemId', e.target.value)}>
             <option value="">— none —</option>
             {data.systems.map((s) => <option key={s.id} value={s.id}>{s.systemName}</option>)}
@@ -58,7 +75,7 @@ export function DecisionForm({ initial, onClose }: { initial: Decision; onClose:
             {TREATMENTS.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
           </Select>
         </Field>
-        <Field label="Decision summary" className="sm:col-span-2">
+        <Field label="Decision summary" className="sm:col-span-2" required error={errors.decisionSummary}>
           <Textarea value={d.decisionSummary} onChange={(e) => set('decisionSummary', e.target.value)} />
         </Field>
         <Field label="Reason / rationale" className="sm:col-span-2">

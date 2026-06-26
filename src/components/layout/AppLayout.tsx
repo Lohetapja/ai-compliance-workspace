@@ -7,10 +7,9 @@ import { AutosaveIndicator } from './AutosaveIndicator';
 import { useStore } from '../../store/useStore';
 import { cn } from '../ui/cn';
 
-// Author attribution. GitHub points to the repo owner; update the LinkedIn slug
-// if it differs from the default below.
+// Author attribution links.
 const GITHUB_URL = 'https://github.com/Lohetapja';
-const LINKEDIN_URL = 'https://www.linkedin.com/in/riivo-maadla/';
+const LINKEDIN_URL = 'https://www.linkedin.com/in/riivo-m-43530a154/';
 
 function DemoBanner() {
   return (
@@ -32,7 +31,7 @@ function SidebarFooter() {
         <a
           href={GITHUB_URL}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-brand"
         >
           GitHub <Icon name="external" size={11} />
@@ -40,7 +39,7 @@ function SidebarFooter() {
         <a
           href={LINKEDIN_URL}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-brand"
         >
           LinkedIn <Icon name="external" size={11} />

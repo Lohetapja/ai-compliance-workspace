@@ -123,7 +123,7 @@ export function SettingsPage() {
               <Button
                 variant="secondary"
                 onClick={() => {
-                  if (confirm('Reset to the fictional sample dataset? This replaces the current workspace.')) {
+                  if (confirm('Replace current local workspace data with fictional sample data? This cannot be undone.')) {
                     resetSampleData();
                     flash('ok', 'Reset to sample data.');
                   }
@@ -145,7 +145,7 @@ export function SettingsPage() {
             <Button
               variant="danger"
               onClick={() => {
-                if (confirm('Clear ALL local data? This cannot be undone (export a backup first).')) {
+                if (confirm('Clear all local workspace data from this browser? Export a JSON backup first if you want to keep it. This cannot be undone.')) {
                   clearAll();
                   flash('ok', 'Cleared all local data.');
                 }

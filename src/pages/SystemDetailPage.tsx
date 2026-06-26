@@ -140,7 +140,7 @@ export function SystemDetailPage() {
     if (newId) navigate(`/systems/${newId}`);
   }
   function del() {
-    if (confirm(`Delete "${system!.systemName}"? Linked items will be unlinked, not deleted.`)) {
+    if (confirm(`Delete "${system!.systemName}" from local demo data? Linked items will be unlinked, not deleted. This cannot be undone.`)) {
       removeSystem(system!.id);
       navigate('/systems');
     }

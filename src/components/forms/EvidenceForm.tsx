@@ -10,7 +10,9 @@ import { EVIDENCE_TYPES } from '../../data/templates';
 export function EvidenceForm({ initial, onClose }: { initial: Evidence; onClose: () => void }) {
   const data = useStore((s) => s.data);
   const upsertEvidence = useStore((s) => s.upsertEvidence);
+  const removeEvidence = useStore((s) => s.removeEvidence);
   const [d, setD] = useState<Evidence>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof Evidence>(k: K, v: Evidence[K]) => setD((p) => ({ ...p, [k]: v }));
   const isNew = !data.evidence.some((e) => e.id === initial.id);
 
@@ -20,8 +22,22 @@ export function EvidenceForm({ initial, onClose }: { initial: Evidence; onClose:
   }
 
   function save() {
-    upsertEvidence({ ...d, evidenceTitle: d.evidenceTitle.trim() || d.evidenceType });
+    const e: Record<string, string> = {};
+    if (!d.evidenceTitle.trim()) e.evidenceTitle = 'Evidence title is required.';
+    if (!d.evidenceType) e.evidenceType = 'Type is required.';
+    if (!d.owner.trim()) e.owner = 'Owner is required.';
+    if (!d.status) e.status = 'Status is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertEvidence({ ...d, evidenceTitle: d.evidenceTitle.trim() });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete evidence "${initial.evidenceTitle}" from local demo data? This cannot be undone.`)) {
+      removeEvidence(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -32,21 +48,22 @@ export function EvidenceForm({ initial, onClose }: { initial: Evidence; onClose:
       subtitle="Evidence is a record that shows a control is real. Store a reference or note — not the sensitive file itself."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save evidence</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Evidence title" className="sm:col-span-2">
+        <Field label="Evidence title" className="sm:col-span-2" required error={errors.evidenceTitle}>
           <Input value={d.evidenceTitle} onChange={(e) => set('evidenceTitle', e.target.value)} />
         </Field>
-        <Field label="Evidence type">
+        <Field label="Evidence type" required error={errors.evidenceType}>
           <Select value={d.evidenceType} onChange={(e) => set('evidenceType', e.target.value)}>
             {EVIDENCE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </Select>
         </Field>
-        <Field label="Status">
+        <Field label="Status" required error={errors.status}>
           <Select value={d.status} onChange={(e) => set('status', e.target.value as EvidenceStatus)}>
             {(Object.keys(EVIDENCE_STATUS_LABELS) as EvidenceStatus[]).map((s) => (
               <option key={s} value={s}>{EVIDENCE_STATUS_LABELS[s]}</option>
@@ -56,7 +73,7 @@ export function EvidenceForm({ initial, onClose }: { initial: Evidence; onClose:
         <Field label="Description" className="sm:col-span-2">
           <Textarea value={d.description} onChange={(e) => set('description', e.target.value)} />
         </Field>
-        <Field label="Owner">
+        <Field label="Owner" required error={errors.owner}>
           <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />
         </Field>
         <Field label="Review date">

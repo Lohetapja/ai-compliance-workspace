@@ -12,7 +12,9 @@ import { RISK_CATEGORIES } from '../../data/templates';
 export function RiskForm({ initial, onClose }: { initial: AIRisk; onClose: () => void }) {
   const data = useStore((s) => s.data);
   const upsertRisk = useStore((s) => s.upsertRisk);
+  const removeRisk = useStore((s) => s.removeRisk);
   const [d, setD] = useState<AIRisk>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof AIRisk>(k: K, v: AIRisk[K]) => setD((p) => ({ ...p, [k]: v }));
   const isNew = !data.risks.some((r) => r.id === initial.id);
 
@@ -24,8 +26,21 @@ export function RiskForm({ initial, onClose }: { initial: AIRisk; onClose: () =>
   }
 
   function save() {
-    upsertRisk({ ...d, riskTitle: d.riskTitle.trim() || 'Untitled risk', severity });
+    const e: Record<string, string> = {};
+    if (!d.riskTitle.trim()) e.riskTitle = 'Risk title is required.';
+    if (!d.affectedAISystemId) e.affectedAISystemId = 'Select the affected AI system.';
+    if (!d.owner.trim()) e.owner = 'Owner is required.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    upsertRisk({ ...d, riskTitle: d.riskTitle.trim(), severity });
     onClose();
+  }
+
+  function del() {
+    if (confirm(`Delete risk "${initial.riskTitle}" from local demo data? This cannot be undone.`)) {
+      removeRisk(initial.id);
+      onClose();
+    }
   }
 
   return (
@@ -36,19 +51,20 @@ export function RiskForm({ initial, onClose }: { initial: AIRisk; onClose: () =>
       subtitle="Describe the AI risk, its likelihood/impact, and how it is being treated."
       footer={
         <>
+          {!isNew && <Button variant="danger" onClick={del} className="mr-auto">Delete</Button>}
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save}>Save risk</Button>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Risk title" className="sm:col-span-2">
+        <Field label="Risk title" className="sm:col-span-2" required error={errors.riskTitle}>
           <Input value={d.riskTitle} onChange={(e) => set('riskTitle', e.target.value)} />
         </Field>
         <Field label="Description" className="sm:col-span-2">
           <Textarea value={d.riskDescription} onChange={(e) => set('riskDescription', e.target.value)} />
         </Field>
-        <Field label="Affected AI system">
+        <Field label="Affected AI system" required error={errors.affectedAISystemId}>
           <Select value={d.affectedAISystemId} onChange={(e) => set('affectedAISystemId', e.target.value)}>
             <option value="">— none —</option>
             {data.systems.map((s) => (
@@ -81,7 +97,7 @@ export function RiskForm({ initial, onClose }: { initial: AIRisk; onClose: () =>
           <SeverityChip value={severity} />
           <span className="text-xs text-faint">(likelihood × impact)</span>
         </div>
-        <Field label="Owner">
+        <Field label="Owner" required error={errors.owner}>
           <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />
         </Field>
         <Field label="Status">
