@@ -63,7 +63,7 @@ export function AboutProjectPage() {
         <div className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-5">
           {workflow.map((step, i) => (
             <div key={step} className="rounded-lg border border-border bg-panel-2 p-3">
-              <div className="text-[11px] font-semibold text-brand">Step {i + 1}</div>
+              <div className="text-xs font-semibold text-brand">Step {i + 1}</div>
               <div className="mt-1 text-sm font-medium text-ink">{step}</div>
             </div>
           ))}

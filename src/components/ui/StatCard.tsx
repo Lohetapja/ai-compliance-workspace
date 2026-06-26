@@ -42,11 +42,11 @@ export function StatCard({
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted">{label}</span>
+        <span className="text-[13px] font-medium text-muted">{label}</span>
         {icon && <Icon name={icon} className={TONE_TEXT[tone]} />}
       </div>
-      <div className={cn('mt-2 text-2xl font-semibold', TONE_TEXT[tone])}>{value}</div>
-      {hint && <div className="mt-1 text-[11px] text-faint">{hint}</div>}
+      <div className={cn('mt-2 text-[28px] font-bold leading-none tracking-tight', TONE_TEXT[tone])}>{value}</div>
+      {hint && <div className="mt-1.5 text-xs text-muted">{hint}</div>}
     </div>
   );
   return to ? (

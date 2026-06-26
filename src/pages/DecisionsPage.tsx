@@ -42,7 +42,7 @@ export function DecisionsPage() {
       cell: (d) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{d.decisionTitle}</div>
-          <div className="truncate text-[11px] text-faint">{systemName(data, d.affectedAISystemId)} · {d.decisionOwner || 'no owner'}</div>
+          <div className="truncate text-xs text-faint">{systemName(data, d.affectedAISystemId)} · {d.decisionOwner || 'no owner'}</div>
         </div>
       ),
     },

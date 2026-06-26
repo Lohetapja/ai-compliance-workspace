@@ -33,7 +33,7 @@ export function CoverageMeter({
         <div className={cn('h-full rounded-full transition-all', tone)} style={{ width: `${pct}%` }} />
       </div>
       {showDisclaimer && (
-        <p className="mt-1.5 text-[10px] leading-snug text-faint">
+        <p className="mt-1.5 text-[11px] leading-snug text-faint">
           Evidence Coverage is not a compliance score. It only shows how much of the
           recommended evidence checklist has been documented.
         </p>

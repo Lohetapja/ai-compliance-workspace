@@ -46,7 +46,7 @@ export function InfoTip({ term, text }: { term?: string; text?: string }) {
       {open && (
         <span
           role="tooltip"
-          className="absolute bottom-full left-1/2 z-50 mb-1.5 w-56 -translate-x-1/2 rounded-lg border border-border bg-elevated px-2.5 py-2 text-[11px] leading-snug font-normal text-ink shadow-xl"
+          className="absolute bottom-full left-1/2 z-50 mb-1.5 w-56 -translate-x-1/2 rounded-lg border border-border bg-elevated px-2.5 py-2 text-xs leading-snug font-normal text-ink shadow-xl"
         >
           {body}
         </span>

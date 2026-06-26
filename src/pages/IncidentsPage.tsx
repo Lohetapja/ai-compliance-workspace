@@ -45,7 +45,7 @@ export function IncidentsPage() {
       cell: (i) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{i.incidentTitle}</div>
-          <div className="truncate text-[11px] text-faint">{i.type} · {systemName(data, i.affectedAISystemId)}</div>
+          <div className="truncate text-xs text-faint">{i.type} · {systemName(data, i.affectedAISystemId)}</div>
         </div>
       ),
     },

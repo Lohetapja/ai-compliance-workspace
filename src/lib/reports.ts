@@ -5,7 +5,7 @@ import {
 } from '../types';
 import { formatDate, relativeReview } from './dates';
 import { systemCoverage, systemGaps, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
-import { dashboardStats, reviewItems, isOpenRisk } from './selectors';
+import { dashboardStats, reviewItems } from './selectors';
 import { HELPER_DISCLAIMER } from './riskHelper';
 
 const DISCLAIMER =

@@ -59,7 +59,7 @@ export function SystemsPage() {
       cell: (s) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{s.systemName}</div>
-          <div className="truncate text-[11px] text-faint">
+          <div className="truncate text-xs text-faint">
             {s.owner || 'No owner'} · {s.businessUnit || '—'}
           </div>
         </div>
@@ -194,11 +194,11 @@ export function SystemsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold text-ink">{t.templateName}</div>
-                    <p className="mt-1 text-[11px] leading-snug text-faint">{t.shortDescription}</p>
+                    <p className="mt-1 text-xs leading-snug text-faint">{t.shortDescription}</p>
                   </div>
                   {t.reviewNote && <Chip tone="warn">Review carefully</Chip>}
                 </div>
-                {t.reviewNote && <p className="mt-2 text-[11px] leading-snug text-warn">{t.reviewNote}</p>}
+                {t.reviewNote && <p className="mt-2 text-xs leading-snug text-warn">{t.reviewNote}</p>}
               </button>
             ))}
           </div>

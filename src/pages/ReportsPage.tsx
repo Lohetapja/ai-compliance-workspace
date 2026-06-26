@@ -37,7 +37,7 @@ export function ReportsPage() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-ink">{r.title}</h3>
-                <p className="mt-0.5 text-[11px] leading-snug text-faint">{r.description}</p>
+                <p className="mt-0.5 text-xs leading-snug text-faint">{r.description}</p>
               </div>
             </div>
             <div className="mt-4 flex gap-2">
@@ -59,7 +59,7 @@ export function ReportsPage() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-ink">Single-System Audit Pack</h3>
-            <p className="mt-0.5 text-[11px] text-faint">
+            <p className="mt-0.5 text-xs text-faint">
               Professional Markdown pack for one system: overview, purpose, ownership, risk helper output,
               linked risks, controls, evidence, missing evidence, gap actions, decisions, incidents, framework summary, and next actions.
             </p>
@@ -118,7 +118,7 @@ export function ReportsPage() {
             </>
           }
         >
-          <pre className="max-h-[60vh] overflow-auto rounded-lg border border-border bg-bg p-4 text-[11px] leading-relaxed text-muted whitespace-pre-wrap">
+          <pre className="max-h-[60vh] overflow-auto rounded-lg border border-border bg-bg p-4 text-xs leading-relaxed text-muted whitespace-pre-wrap">
             {preview.content}
           </pre>
         </Modal>

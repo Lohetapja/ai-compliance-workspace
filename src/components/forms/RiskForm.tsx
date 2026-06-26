@@ -79,7 +79,7 @@ export function RiskForm({ initial, onClose }: { initial: AIRisk; onClose: () =>
         <div className="flex items-center gap-2 sm:col-span-2">
           <span className="text-xs text-muted">Derived severity:</span>
           <SeverityChip value={severity} />
-          <span className="text-[11px] text-faint">(likelihood × impact)</span>
+          <span className="text-xs text-faint">(likelihood × impact)</span>
         </div>
         <Field label="Owner">
           <Input value={d.owner} onChange={(e) => set('owner', e.target.value)} />

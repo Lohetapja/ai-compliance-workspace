@@ -43,7 +43,7 @@ export function RiskRegisterPage() {
       cell: (r) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{r.riskTitle}</div>
-          <div className="truncate text-[11px] text-faint">{systemName(data, r.affectedAISystemId)} · {r.riskCategory}</div>
+          <div className="truncate text-xs text-faint">{systemName(data, r.affectedAISystemId)} · {r.riskCategory}</div>
         </div>
       ),
     },
@@ -124,7 +124,7 @@ export function RiskRegisterPage() {
                   <span className="text-sm font-medium text-ink">{t.riskTitle}</span>
                   <Chip tone="neutral">{t.riskCategory}</Chip>
                 </div>
-                <p className="mt-1 line-clamp-2 text-[11px] text-faint">{t.riskDescription}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-faint">{t.riskDescription}</p>
               </button>
             ))}
           </div>

@@ -15,7 +15,7 @@ export function AutosaveIndicator() {
   }, [lastSaved]);
 
   return (
-    <div className="flex items-center gap-1.5 text-[11px] text-faint" title="Data is stored only in this browser (localStorage).">
+    <div className="flex items-center gap-1.5 text-xs text-muted" title="Data is stored only in this browser (localStorage).">
       <span
         className={`h-1.5 w-1.5 rounded-full transition-colors ${
           justSaved ? 'bg-ok' : 'bg-faint'

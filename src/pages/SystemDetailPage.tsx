@@ -54,7 +54,7 @@ type Modal =
 function Detail({ label, value, term }: { label: string; value: React.ReactNode; term?: string }) {
   return (
     <div>
-      <dt className="flex items-center text-[11px] font-medium uppercase tracking-wide text-faint">
+      <dt className="flex items-center text-xs font-medium uppercase tracking-wide text-faint">
         {label}
         {term && <InfoTip term={term} />}
       </dt>
@@ -249,7 +249,7 @@ export function SystemDetailPage() {
           <LinkedPanel title="Linked controls" count={controls.length} onAdd={() => setModal({ t: 'control', e: { ...blankControl(system.id) } })} empty="No controls yet. Add oversight, logging, or vendor controls.">
             {controls.map((c) => (
               <Row key={c.id} onClick={() => setModal({ t: 'control', e: c })}>
-                <span className="min-w-0 truncate text-sm text-ink">{c.controlTitle}<span className="ml-2 text-[11px] text-faint">{c.controlCategory}</span></span>
+                <span className="min-w-0 truncate text-sm text-ink">{c.controlTitle}<span className="ml-2 text-xs text-faint">{c.controlCategory}</span></span>
                 <ControlStatusChip value={c.status} />
               </Row>
             ))}
@@ -258,7 +258,7 @@ export function SystemDetailPage() {
           <LinkedPanel title="Linked evidence" count={evidence.length} onAdd={() => setModal({ t: 'evidence', e: blankEvidence(system.id) })} empty="No evidence yet. Attach a risk assessment, logging config, or model card.">
             {evidence.map((e) => (
               <Row key={e.id} onClick={() => setModal({ t: 'evidence', e })}>
-                <span className="min-w-0 truncate text-sm text-ink">{e.evidenceTitle}<span className="ml-2 text-[11px] text-faint">{e.evidenceType}</span></span>
+                <span className="min-w-0 truncate text-sm text-ink">{e.evidenceTitle}<span className="ml-2 text-xs text-faint">{e.evidenceType}</span></span>
                 <EvidenceStatusChip value={e.status} />
               </Row>
             ))}
@@ -338,7 +338,7 @@ export function SystemDetailPage() {
                   <div key={g.id} className="px-4 py-3">
                     <button onClick={() => setModal({ t: 'gapAction', e: g })} className="w-full text-left">
                       <div className="text-sm font-medium text-ink">{g.title}</div>
-                      <div className="mt-0.5 text-[11px] text-faint">{g.gapType} · {g.owner || 'No owner'} · {g.status}</div>
+                      <div className="mt-0.5 text-xs text-faint">{g.gapType} · {g.owner || 'No owner'} · {g.status}</div>
                     </button>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {g.status !== 'done' && (

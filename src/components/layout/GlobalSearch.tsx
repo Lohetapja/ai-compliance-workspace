@@ -109,7 +109,7 @@ export function GlobalSearch() {
                 </Chip>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm text-ink">{r.title}</span>
-                  <span className="block truncate text-[11px] text-faint">{r.subtitle}</span>
+                  <span className="block truncate text-xs text-faint">{r.subtitle}</span>
                 </span>
               </button>
             ))

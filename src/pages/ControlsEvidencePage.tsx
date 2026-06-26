@@ -99,7 +99,7 @@ export function ControlsEvidencePage() {
       cell: (c) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{c.controlTitle}</div>
-          <div className="truncate text-[11px] text-faint">{c.controlCategory} · {c.affectedAISystemIds.length} system(s)</div>
+          <div className="truncate text-xs text-faint">{c.controlCategory} · {c.affectedAISystemIds.length} system(s)</div>
         </div>
       ),
     },
@@ -130,7 +130,7 @@ export function ControlsEvidencePage() {
       cell: (e) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{e.evidenceTitle}</div>
-          <div className="truncate text-[11px] text-faint">{e.evidenceType} · {systemNames(e)}</div>
+          <div className="truncate text-xs text-faint">{e.evidenceType} · {systemNames(e)}</div>
         </div>
       ),
     },
@@ -253,7 +253,7 @@ export function ControlsEvidencePage() {
                   <span className="text-sm font-medium text-ink">{t.controlTitle}</span>
                   <Chip tone="neutral">{t.controlCategory}</Chip>
                 </div>
-                <p className="mt-1 line-clamp-2 text-[11px] text-faint">{t.purpose}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-faint">{t.purpose}</p>
               </button>
             ))}
           </div>

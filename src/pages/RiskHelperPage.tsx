@@ -95,7 +95,7 @@ export function RiskHelperPage() {
                   <div key={q.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 flex-1 pr-2">
                       <p className="text-sm text-ink">{q.text}</p>
-                      {q.help && <p className="mt-0.5 text-[11px] text-faint">{q.help}</p>}
+                      {q.help && <p className="mt-0.5 text-xs text-faint">{q.help}</p>}
                     </div>
                     <div className="shrink-0">
                       <TriSelect
@@ -166,7 +166,7 @@ export function RiskHelperPage() {
                 <Button variant="primary" className="w-full" disabled={!systemId} onClick={applyToSystem}>
                   {applied ? 'Applied ✓' : 'Apply result to system'}
                 </Button>
-                <p className="text-[11px] leading-snug text-faint">
+                <p className="text-xs leading-snug text-faint">
                   This overwrites the system’s risk band and review flags with the helper’s output.
                   You can still edit them manually afterwards.
                 </p>
@@ -178,7 +178,7 @@ export function RiskHelperPage() {
                 <CardHeader title="Why this result" />
                 <ul className="space-y-1 p-4">
                   {result.reasons.slice(0, 10).map((r, i) => (
-                    <li key={i} className="text-[11px] leading-snug text-faint">• {r}</li>
+                    <li key={i} className="text-xs leading-snug text-faint">• {r}</li>
                   ))}
                 </ul>
               </Card>

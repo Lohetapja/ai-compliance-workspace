@@ -21,7 +21,7 @@ export function Field({
         {term && <InfoTip term={term} />}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-[11px] text-faint">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-faint">{hint}</span>}
     </label>
   );
 }

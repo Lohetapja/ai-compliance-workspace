@@ -13,9 +13,12 @@
   --color-border: #233149;
   --color-border-strong: #33415c;
 
-  --color-ink: #e6edf7;
-  --color-muted: #94a3b8;
-  --color-faint: #64748b;
+  /* Text scale — tuned for contrast on the dark slate background.
+     ink: primary, near-white. muted: readable secondary (not washed-out blue).
+     faint: understated meta text that still clears WCAG AA for small text. */
+  --color-ink: #f1f5fb;
+  --color-muted: #aebccf;
+  --color-faint: #8a99af;
 
   --color-brand: #3b82f6;
   --color-brand-2: #22d3ee;
@@ -44,6 +47,8 @@
     background-color: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -109,9 +114,9 @@
 
   .label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-muted);
     margin-bottom: 0.3rem;

@@ -31,8 +31,8 @@ export function CardHeader({
       )}
     >
       <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-ink">{title}</h3>
-        {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+        <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
+        {subtitle && <p className="mt-0.5 text-[13px] text-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>

@@ -80,7 +80,7 @@ export function SettingsPage() {
                 {counts.map(([label, n]) => (
                   <div key={label} className="rounded-lg border border-border bg-panel-2 p-2 text-center">
                     <div className="text-lg font-semibold text-ink">{n}</div>
-                    <div className="text-[10px] text-faint">{label}</div>
+                    <div className="text-[11px] text-faint">{label}</div>
                   </div>
                 ))}
               </div>
@@ -106,7 +106,7 @@ export function SettingsPage() {
                 }}
               />
             </div>
-            <p className="text-[11px] leading-snug text-faint">
+            <p className="text-xs leading-snug text-faint">
               Import replaces the current workspace with the contents of the file. Export first if you
               want to keep what you have.
             </p>
@@ -132,7 +132,7 @@ export function SettingsPage() {
                 <Icon name="report" size={14} /> Reset demo data
               </Button>
             </div>
-            <p className="text-[11px] leading-snug text-faint">
+            <p className="text-xs leading-snug text-faint">
               The sample data demonstrates a realistic AI infrastructure provider with linked systems,
               risks, controls, evidence, decisions and incidents.
             </p>
@@ -153,7 +153,7 @@ export function SettingsPage() {
             >
               <Icon name="trash" size={14} /> Clear local data
             </Button>
-            <p className="text-[11px] leading-snug text-faint">
+            <p className="text-xs leading-snug text-faint">
               Removes everything from this browser. The app will start empty until you add a system or
               load the sample data again.
             </p>

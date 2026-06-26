@@ -69,8 +69,8 @@ export function DashboardPage() {
         />
         <div className="space-y-3 p-4 text-sm leading-relaxed text-muted">
           <p>
-            Recommended workflow: create an AI system -> classify possible risk -> add risks -> assign controls ->
-            attach evidence -> record decisions -> log incidents/issues -> export an audit pack -> review again later.
+            Recommended workflow: create an AI system → classify possible risk → add risks → assign controls →
+            attach evidence → record decisions → log incidents/issues → export an audit pack → review again later.
           </p>
           <p className="text-xs text-faint">
             This is a local-first demo. Data stays in browser localStorage. Do not enter real confidential,
@@ -176,7 +176,7 @@ export function DashboardPage() {
                 <div key={`${r.kind}-${r.id}`} className="flex items-center justify-between gap-2 px-4 py-2.5">
                   <div className="min-w-0">
                     <div className="truncate text-xs font-medium text-ink">{r.title}</div>
-                    <div className="text-[11px] text-faint capitalize">
+                    <div className="text-xs text-faint capitalize">
                       {r.kind} · {formatDate(r.date)} · {relativeReview(r.date)}
                     </div>
                   </div>
@@ -207,7 +207,7 @@ export function DashboardPage() {
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-ink">{s.name}</div>
-                  <div className="truncate text-[11px] text-faint">{s.owner || 'No owner'}</div>
+                  <div className="truncate text-xs text-faint">{s.owner || 'No owner'}</div>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {s.reasons.map((r) => (
@@ -220,7 +220,7 @@ export function DashboardPage() {
         )}
       </Card>
 
-      <p className="mt-5 text-[11px] leading-relaxed text-faint">
+      <p className="mt-5 text-xs leading-relaxed text-faint">
         This dashboard is a working overview, not an assurance statement. “Possible high-risk”,
         risk bands and review flags indicate where human (legal / privacy / security) review may be
         needed — they are not legal conclusions or a compliance score.

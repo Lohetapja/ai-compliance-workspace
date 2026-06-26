@@ -47,7 +47,7 @@ export function GapActionsPage() {
       cell: (g) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">{g.title}</div>
-          <div className="truncate text-[11px] text-faint">
+          <div className="truncate text-xs text-faint">
             {g.gapType} · {data.systems.find((s) => s.id === g.affectedAISystemId)?.systemName ?? 'No system linked'}
           </div>
         </div>
