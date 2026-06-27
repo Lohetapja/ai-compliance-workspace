@@ -18,6 +18,34 @@ import { isOverdue, reviewState } from './dates';
  * copyrighted standard text. All groupings are indicative only.
  */
 
+/** The set of framework lenses (high-level organizational views). */
+export type FrameworkLensId =
+  | 'ai-act'
+  | 'gdpr'
+  | 'iso'
+  | 'nis2'
+  | 'security'
+  | 'evidence'
+  | 'vendor'
+  | 'management';
+
+export interface FrameworkLens {
+  id: FrameworkLensId;
+  label: string;
+  description: string;
+}
+
+export const FRAMEWORK_LENSES: FrameworkLens[] = [
+  { id: 'ai-act', label: 'AI Act View', description: 'AI Act-relevant review areas' },
+  { id: 'gdpr', label: 'GDPR View', description: 'GDPR-relevant privacy review' },
+  { id: 'iso', label: 'ISO 42001 View', description: 'ISO 42001-inspired governance areas' },
+  { id: 'nis2', label: 'NIS2 View', description: 'NIS2-relevant cybersecurity evidence' },
+  { id: 'security', label: 'AI Security View', description: 'AI security risks inspired by OWASP LLM Top 10 / MITRE ATLAS' },
+  { id: 'evidence', label: 'Audit Evidence View', description: 'Evidence readiness and freshness' },
+  { id: 'vendor', label: 'Vendor Risk View', description: 'Third-party AI provider review status' },
+  { id: 'management', label: 'Management View', description: 'High-level portfolio summary' },
+];
+
 export function activeSystems(data: WorkspaceData): AISystem[] {
   return data.systems.filter((s) => s.currentStatus !== 'archived');
 }

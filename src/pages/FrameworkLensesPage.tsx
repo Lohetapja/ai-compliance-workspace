@@ -24,23 +24,15 @@ import {
   nis2Rows,
   securityRelevantRisks,
   vendorReviewsPending,
+  FRAMEWORK_LENSES,
+  type FrameworkLensId,
 } from '../lib/lenses';
 import { dashboardStats } from '../lib/selectors';
 import { ReviewStatusChip, RiskLevelChip } from '../components/ui/statusChips';
 import { RISK_CATEGORY_LABELS, type AISystem, type RiskCategory } from '../types';
 
-type Lens = 'ai-act' | 'gdpr' | 'iso' | 'nis2' | 'security' | 'evidence' | 'vendor' | 'management';
-
-const LENSES: { id: Lens; label: string }[] = [
-  { id: 'ai-act', label: 'AI Act View' },
-  { id: 'gdpr', label: 'GDPR View' },
-  { id: 'iso', label: 'ISO 42001 View' },
-  { id: 'nis2', label: 'NIS2 View' },
-  { id: 'security', label: 'AI Security View' },
-  { id: 'evidence', label: 'Audit Evidence View' },
-  { id: 'vendor', label: 'Vendor Risk View' },
-  { id: 'management', label: 'Management View' },
-];
+type Lens = FrameworkLensId;
+const LENSES = FRAMEWORK_LENSES;
 
 function SystemLink({ s }: { s: AISystem }) {
   return (

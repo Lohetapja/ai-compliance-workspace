@@ -431,12 +431,29 @@ export const useStore = create<StoreState>()(
       clearAll: () => set({ data: emptyWorkspace(), lastSaved: nowISO() }),
 
       importData: (incoming) => {
-        const data: WorkspaceData =
-          'data' in incoming && (incoming as WorkspaceExport).app
-            ? (incoming as WorkspaceExport).data
-            : (incoming as WorkspaceData);
-        // Merge with an empty workspace so missing collections never crash the UI.
-        const merged: WorkspaceData = { ...emptyWorkspace(), ...data };
+        const raw = (('data' in incoming && (incoming as WorkspaceExport).app
+          ? (incoming as WorkspaceExport).data
+          : incoming) ?? {}) as Partial<WorkspaceData>;
+        // Validate every collection: anything missing or not an array falls back
+        // to a safe empty default, so older or partial backups never crash the UI.
+        const base = emptyWorkspace();
+        const arr = <T,>(v: unknown, fallback: T[]): T[] => (Array.isArray(v) ? (v as T[]) : fallback);
+        const merged: WorkspaceData = {
+          systems: arr(raw.systems, base.systems),
+          risks: arr(raw.risks, base.risks),
+          controls: arr(raw.controls, base.controls),
+          evidence: arr(raw.evidence, base.evidence),
+          decisions: arr(raw.decisions, base.decisions),
+          incidents: arr(raw.incidents, base.incidents),
+          gapActions: arr(raw.gapActions, base.gapActions),
+          useCases: arr(raw.useCases, base.useCases),
+          vendors: arr(raw.vendors, base.vendors),
+          frameworkNotes: arr(raw.frameworkNotes, base.frameworkNotes),
+          organizationName:
+            typeof raw.organizationName === 'string' && raw.organizationName.trim()
+              ? raw.organizationName
+              : base.organizationName,
+        };
         set({ data: merged, lastSaved: nowISO() });
       },
 

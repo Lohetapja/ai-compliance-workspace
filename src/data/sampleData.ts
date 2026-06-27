@@ -1217,6 +1217,23 @@ export function sampleWorkspace(): WorkspaceData {
       notes: '',
       createdDays: -52,
     }),
+    evd({
+      id: 'evd-userdocs-coding',
+      evidenceTitle: 'User instructions — Internal Coding Assistant',
+      evidenceType: 'User instructions',
+      description: 'Draft usage guidance for engineers; no review date set yet.',
+      owner: 'Engineering Lead',
+      linkedAISystemIds: ['sys-coding'],
+      linkedControlIds: [],
+      linkedRiskIds: [],
+      fileReferenceOrUrlOrNote: 'note only',
+      status: 'draft',
+      reviewDate: '',
+      requiredFor: 'Transparency / user communication',
+      frameworkTags: ['OWASP LLM Top 10'],
+      notes: 'Demonstrates the "Missing Review Date" freshness state — set a review date.',
+      createdDays: -15,
+    }),
   ];
 
   const decisions: Decision[] = [
