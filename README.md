@@ -98,6 +98,11 @@ core review trail connected:
 9. Open **Settings / Data** to export JSON, import JSON, reset demo data, or
    clear local data.
 
+**Quick guided demo path:** **AI Systems** → open one system → follow its
+traceability chain (risks → controls → evidence → decisions → incidents → gap
+actions) → open a **Framework Lens** (e.g. GDPR or AI Security) → check the
+**Review Queue** → **Generate a Single-System Audit Pack** from Reports.
+
 ## Modules
 
 | Module | Purpose |

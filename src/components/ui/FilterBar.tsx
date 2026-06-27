@@ -14,23 +14,27 @@ export function FilterBar({
   filters = [],
   right,
 }: {
-  search: string;
-  onSearch: (v: string) => void;
+  /** Omit search + onSearch to render a filters-only bar (no dead search box). */
+  search?: string;
+  onSearch?: (v: string) => void;
   searchPlaceholder?: string;
   filters?: FilterDef[];
   right?: React.ReactNode;
 }) {
+  const showSearch = typeof onSearch === 'function';
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
-      <div className="relative min-w-[180px] flex-1">
-        <Icon name="search" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" size={14} />
-        <input
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="input pl-8"
-        />
-      </div>
+      {showSearch && (
+        <div className="relative min-w-[180px] flex-1">
+          <Icon name="search" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" size={14} />
+          <input
+            value={search ?? ''}
+            onChange={(e) => onSearch?.(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="input pl-8"
+          />
+        </div>
+      )}
       {filters.map((f) => (
         <select
           key={f.label}

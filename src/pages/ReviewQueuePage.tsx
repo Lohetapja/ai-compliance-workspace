@@ -30,6 +30,7 @@ interface QueueItem {
 
 export function ReviewQueuePage() {
   const data = useStore((s) => s.data);
+  const [q, setQ] = useState('');
   const [kind, setKind] = useState('');
   const [owner, setOwner] = useState('');
   const [sev, setSev] = useState('');
@@ -100,6 +101,7 @@ export function ReviewQueuePage() {
   const owners = useMemo(() => [...new Set(items.map((i) => i.owner).filter(Boolean))].sort(), [items]);
 
   const filtered = items.filter((i) => {
+    if (q && !`${i.title} ${i.owner} ${i.system} ${i.kind}`.toLowerCase().includes(q.toLowerCase())) return false;
     if (kind && i.kind !== kind) return false;
     if (owner && i.owner !== owner) return false;
     if (sev && i.severity !== sev) return false;
@@ -124,9 +126,9 @@ export function ReviewQueuePage() {
       />
 
       <FilterBar
-        search=""
-        onSearch={() => {}}
-        searchPlaceholder=""
+        search={q}
+        onSearch={setQ}
+        searchPlaceholder="Search review items…"
         filters={[
           { label: 'Type', value: kind, onChange: setKind, options: ['AI System', 'Evidence', 'Vendor', 'Risk', 'Control', 'Gap Action', 'Use Case'].map((v) => ({ value: v, label: v })) },
           { label: 'Owner', value: owner, onChange: setOwner, options: owners.map((o) => ({ value: o, label: o })) },
