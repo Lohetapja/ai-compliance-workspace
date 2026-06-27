@@ -11,7 +11,7 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Modal } from '../components/ui/Modal';
 import { Chip } from '../components/ui/Chip';
 import { ControlStatusChip, EvidenceStatusChip, FreshnessChip, ReviewChip } from '../components/ui/statusChips';
-import { reviewState } from '../lib/dates';
+import { formatDate, reviewState } from '../lib/dates';
 import { evidenceFreshness } from '../lib/freshness';
 import { controlLacksEvidence } from '../lib/selectors';
 import { cn } from '../components/ui/cn';
@@ -39,6 +39,7 @@ export function ControlsEvidencePage() {
   const [systemId, setSystemId] = useState('');
   const [type, setType] = useState('');
   const [framework, setFramework] = useState('');
+  const [freshness, setFreshness] = useState('');
 
   const owners = useMemo(
     () => [...new Set(data.evidence.map((e) => e.owner).filter(Boolean))].sort(),
@@ -64,9 +65,10 @@ export function ControlsEvidencePage() {
         if (systemId && !e.linkedAISystemIds.includes(systemId)) return false;
         if (type && e.evidenceType !== type) return false;
         if (framework && !e.frameworkTags.includes(framework as FrameworkId)) return false;
+        if (freshness && evidenceFreshness(e) !== freshness) return false;
         return true;
       }),
-    [data.evidence, q, status, owner, systemId, type, framework]
+    [data.evidence, q, status, owner, systemId, type, framework, freshness]
   );
 
   function systemNames(e: Evidence): string {
@@ -130,11 +132,13 @@ export function ControlsEvidencePage() {
     { header: 'Linked control', cell: (e) => <span className="truncate text-xs text-muted">{controlNames(e)}</span> },
     { header: 'Freshness', cell: (e) => <FreshnessChip value={evidenceFreshness(e)} /> },
     {
-      header: 'Review',
-      cell: (e) => {
-        const st = reviewState(e.reviewDate);
-        return st === 'none' ? <span className="text-faint">—</span> : <ReviewChip state={st} />;
-      },
+      header: 'Review / Expiry',
+      cell: (e) => (
+        <div className="text-xs text-muted">
+          <div>Review: {e.reviewDate ? formatDate(e.reviewDate) : <span className="text-faint">—</span>}</div>
+          <div>Expiry: {e.expiryDate ? formatDate(e.expiryDate) : <span className="text-faint">—</span>}</div>
+        </div>
+      ),
     },
   ];
 
@@ -150,6 +154,7 @@ export function ControlsEvidencePage() {
     setSystemId('');
     setType('');
     setFramework('');
+    setFreshness('');
   }
 
   return (
@@ -214,6 +219,17 @@ export function ControlsEvidencePage() {
                     { label: 'Owner', value: owner, onChange: setOwner, options: owners.map((o) => ({ value: o, label: o })) },
                     { label: 'System', value: systemId, onChange: setSystemId, options: data.systems.map((s) => ({ value: s.id, label: s.systemName })) },
                     { label: 'Framework', value: framework, onChange: setFramework, options: FRAMEWORKS.map((f) => ({ value: f, label: f })) },
+                    {
+                      label: 'Freshness',
+                      value: freshness,
+                      onChange: setFreshness,
+                      options: [
+                        { value: 'fresh', label: 'Fresh' },
+                        { value: 'due-soon', label: 'Due Soon' },
+                        { value: 'expired', label: 'Expired' },
+                        { value: 'missing-review-date', label: 'Missing Review Date' },
+                      ],
+                    },
                   ]
             }
           />

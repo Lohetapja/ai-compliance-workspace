@@ -171,6 +171,7 @@ export function lensCounts(data: WorkspaceData) {
     intakePending: pendingIntakes(data).length,
     expiredEvidence: buckets.expired.length,
     evidenceDueSoon: buckets.dueSoon.length,
+    evidenceMissingReviewDate: data.evidence.filter((e) => evidenceFreshness(e) === 'missing-review-date').length,
     aiActReviewAreas: activeSystems(data).filter(
       (s) => s.riskCategory === 'high-review-needed' || s.legalReviewNeeded
     ).length,

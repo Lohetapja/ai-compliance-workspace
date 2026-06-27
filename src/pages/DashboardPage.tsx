@@ -126,11 +126,12 @@ export function DashboardPage() {
       </div>
 
       {/* Governance views & workflow */}
-      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatCard label="Vendor reviews pending" value={lens.vendorReviewsPending} tone={lens.vendorReviewsPending ? 'warn' : 'ok'} icon="box" to="/vendors" />
         <StatCard label="Intake requests pending" value={lens.intakePending} tone={lens.intakePending ? 'info' : 'neutral'} icon="inbox" to="/use-cases" />
-        <StatCard label="Expired evidence" value={lens.expiredEvidence} tone={lens.expiredEvidence ? 'danger' : 'ok'} to="/framework-lenses" />
-        <StatCard label="Evidence due soon" value={lens.evidenceDueSoon} tone={lens.evidenceDueSoon ? 'warn' : 'ok'} to="/framework-lenses" />
+        <StatCard label="Expired evidence" value={lens.expiredEvidence} tone={lens.expiredEvidence ? 'danger' : 'ok'} to="/controls" />
+        <StatCard label="Evidence due soon" value={lens.evidenceDueSoon} tone={lens.evidenceDueSoon ? 'warn' : 'ok'} to="/controls" />
+        <StatCard label="Evidence missing review date" value={lens.evidenceMissingReviewDate} tone={lens.evidenceMissingReviewDate ? 'warn' : 'ok'} to="/controls" />
       </div>
 
       <Card className="mt-5">
