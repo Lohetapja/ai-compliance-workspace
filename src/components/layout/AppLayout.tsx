@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { NAV_ITEMS } from './nav';
+import { NAV_GROUPS } from './nav';
 import { Icon } from '../ui/Icon';
 import { GlobalSearch } from './GlobalSearch';
 import { AutosaveIndicator } from './AutosaveIndicator';
@@ -69,24 +69,33 @@ function Brand() {
 
 function SidebarLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <nav className="flex flex-1 flex-col gap-0.5 px-2 py-2">
-      {NAV_ITEMS.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-              isActive
-                ? 'bg-brand/15 font-semibold text-brand ring-1 ring-inset ring-brand/25'
-                : 'font-medium text-muted hover:bg-elevated hover:text-ink'
-            )
-          }
-        >
-          <Icon name={item.icon} />
-          <span className="truncate">{item.label}</span>
-        </NavLink>
+    <nav className="flex flex-1 flex-col gap-3 overflow-y-auto px-2 py-3">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.heading}>
+          <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-faint">
+            {group.heading}
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {group.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-colors',
+                    isActive
+                      ? 'bg-brand/15 font-semibold text-brand ring-1 ring-inset ring-brand/25'
+                      : 'font-medium text-muted hover:bg-elevated hover:text-ink'
+                  )
+                }
+              >
+                <Icon name={item.icon} />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
       ))}
     </nav>
   );

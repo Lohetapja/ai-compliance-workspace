@@ -1,12 +1,13 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
-import { Field, Input, Checkbox } from '../components/ui/Field';
+import { Field, Input, Checkbox, Select } from '../components/ui/Field';
 import { downloadJSON } from '../lib/download';
-import { useAppearance } from '../store/useAppearance';
+import { useAppearance, type DefaultLens, type EvidenceWindow, type ReviewWindow } from '../store/useAppearance';
+import { FRAMEWORK_LENSES } from '../lib/lenses';
 import { cn } from '../components/ui/cn';
 import type { WorkspaceExport } from '../types';
 
@@ -48,6 +49,20 @@ export function SettingsPage() {
   const setOrganizationName = useStore((s) => s.setOrganizationName);
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
+  // Approximate local storage used by this app's keys (KB), recomputed when data changes.
+  const storageKb = useMemo(() => {
+    let bytes = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('ai-compliance-workspace')) bytes += (localStorage.getItem(k)?.length ?? 0) + k.length;
+      }
+    } catch {
+      /* ignore */
+    }
+    return Math.max(1, Math.round(bytes / 1024));
+  }, [data]);
 
   function flash(kind: 'ok' | 'err', text: string) {
     setMsg({ kind, text });
@@ -98,6 +113,7 @@ export function SettingsPage() {
       )}
 
       <AppearanceCard />
+      <WorkflowCard />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
@@ -142,6 +158,10 @@ export function SettingsPage() {
               Import replaces the current workspace with the contents of the file. Export first if you
               want to keep what you have.
             </p>
+            <p className="rounded-lg bg-warn/10 px-3 py-2 text-xs leading-snug text-warn ring-1 ring-inset ring-warn/20">
+              This app stores data locally in this browser. Export a JSON backup if you want to keep your workspace.
+            </p>
+            <p className="text-xs text-faint">Local storage in use: {storageKb} KB</p>
           </div>
         </Card>
 
@@ -268,6 +288,54 @@ function AppearanceCard() {
           <Checkbox checked={highContrast} onChange={setHighContrast} label="High contrast mode" />
         </div>
       </div>
+    </Card>
+  );
+}
+
+function WorkflowCard() {
+  const { defaultLens, reviewWindow, evidenceWindow, showAdvanced, setDefaultLens, setReviewWindow, setEvidenceWindow, setShowAdvanced } =
+    useAppearance();
+  return (
+    <Card className="mb-4">
+      <CardHeader title="Workflow" subtitle="Preferences for governance views and review windows (stored in this browser)." />
+      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+        <Field label="Default framework lens">
+          <Select value={defaultLens} onChange={(e) => setDefaultLens(e.target.value as DefaultLens)}>
+            {FRAMEWORK_LENSES.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Review due-soon window">
+          <Segmented
+            value={String(reviewWindow)}
+            onChange={(v) => setReviewWindow(Number(v) as ReviewWindow)}
+            options={[
+              { value: '7', label: '7 days' },
+              { value: '14', label: '14 days' },
+              { value: '30', label: '30 days' },
+            ]}
+          />
+        </Field>
+        <Field label="Evidence due-soon window">
+          <Segmented
+            value={String(evidenceWindow)}
+            onChange={(v) => setEvidenceWindow(Number(v) as EvidenceWindow)}
+            options={[
+              { value: '30', label: '30 days' },
+              { value: '60', label: '60 days' },
+              { value: '90', label: '90 days' },
+            ]}
+          />
+        </Field>
+        <div className="flex items-end pb-1">
+          <Checkbox checked={showAdvanced} onChange={setShowAdvanced} label="Show advanced modules" />
+        </div>
+      </div>
+      <p className="px-4 pb-3 text-[11px] leading-snug text-faint">
+        The default lens opens first on Framework Lenses. Review/evidence windows are stored for upcoming
+        tuning of due-soon calculations.
+      </p>
     </Card>
   );
 }

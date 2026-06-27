@@ -161,6 +161,7 @@ export function SystemDetailPage() {
   const incidents = data.incidents.filter((i) => i.affectedAISystemId === system.id);
   const gapActions = (data.gapActions ?? []).filter((g) => g.affectedAISystemId === system.id);
   const openGapActions = gapActions.filter((g) => g.status !== 'done' && g.status !== 'accepted-risk');
+  const linkedVendors = (data.vendors ?? []).filter((v) => v.linkedAISystemIds.includes(system.id));
   const cov = systemCoverage(system, data);
   const gaps = systemGaps(system, data);
 
@@ -420,6 +421,25 @@ export function SystemDetailPage() {
                         <Button size="sm" variant="ghost" onClick={() => patchGapAction(g.id, { linkedEvidenceId: evidence[0].id })}>Link evidence</Button>
                       )}
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <CardHeader title={`Linked vendors (${linkedVendors.length})`} subtitle="Third-party providers for this system" actions={<Link to="/vendors" className="text-xs text-brand hover:underline">Register →</Link>} />
+            {linkedVendors.length === 0 ? (
+              <p className="px-4 py-4 text-xs text-faint">No vendors linked. Link providers in the Vendor Register.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {linkedVendors.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between gap-2 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-ink">{v.vendorName}</div>
+                      <div className="truncate text-xs text-faint">{v.serviceType || '—'}</div>
+                    </div>
+                    <Chip tone={v.vendorDependencyRisk === 'high' ? 'danger' : v.vendorDependencyRisk === 'medium' ? 'warn' : 'ok'}>{v.vendorDependencyRisk} dependency</Chip>
                   </div>
                 ))}
               </div>

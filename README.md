@@ -115,15 +115,23 @@ core review trail connected:
 | Framework Lenses | High-level AI Act / GDPR / ISO 42001 / NIS2 / AI Security / Audit Evidence / Vendor Risk / Management views — indicative only. |
 | Framework Mapping | Stores high-level notes by framework and requirement area. |
 | Research Sources | Plain-language pointers to learning references (EU AI Act, ISO 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
-| Reports | Generates Markdown working reports, a Framework Lens Summary, and single-system audit packs. |
-| Settings / Data | Manages sample data, JSON backup/restore, local data clearing, and appearance (theme, density, text size, high contrast). |
+| Review Queue | Time-based queue of what is overdue or due soon across systems, evidence, vendors, risks, controls, gap actions, and intake. |
+| Owners & Responsibilities | A responsibility matrix showing who owns what (based on owner-name strings — no accounts). |
+| Reports | 12 Markdown reports (incl. Framework Lens Summary, Vendor Risk, Open Actions, GDPR Privacy Review, AI Security) + single-system audit packs + CSV exports of key tables. |
+| Settings / Data | Manages sample data, JSON backup/restore, local data clearing, appearance (theme, density, text size, high contrast), and workflow preferences. |
 
 ### How this differs from enterprise tools
 
 This project intentionally does **not** include: auto-discovery of AI systems, runtime telemetry
 ingestion, continuous model monitoring, policy enforcement, enterprise integrations,
-authentication/authorization, real audit certification, or legal compliance determination. It is a
-local-first portfolio project focused on structure, workflow, evidence, and learning.
+authentication/authorization, collaboration workflows, immutable audit logs, real evidence
+attachments, legal compliance determination, certification workflows, or official framework content
+libraries. It is a local-first portfolio and learning project focused on structure, workflow,
+evidence, and audit-preparation thinking.
+
+Enterprise tools such as AI governance/GRC platforms usually provide integrations, automation,
+collaboration, monitoring, and formal audit workflows. **This project is not a replacement for those
+tools.**
 
 ## Screenshots
 

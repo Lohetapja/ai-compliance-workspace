@@ -28,6 +28,7 @@ import {
   type FrameworkLensId,
 } from '../lib/lenses';
 import { dashboardStats } from '../lib/selectors';
+import { useAppearance } from '../store/useAppearance';
 import { ReviewStatusChip, RiskLevelChip } from '../components/ui/statusChips';
 import { RISK_CATEGORY_LABELS, type AISystem, type RiskCategory } from '../types';
 
@@ -46,7 +47,8 @@ const tri = (v: string) => <span className="capitalize">{v}</span>;
 
 export function FrameworkLensesPage() {
   const data = useStore((s) => s.data);
-  const [lens, setLens] = useState<Lens>('ai-act');
+  const defaultLens = useAppearance((s) => s.defaultLens);
+  const [lens, setLens] = useState<Lens>(defaultLens);
 
   const aiAct = useMemo(() => aiActBuckets(data), [data]);
   const iso = useMemo(() => iso42001Areas(data), [data]);

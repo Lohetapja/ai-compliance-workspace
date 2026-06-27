@@ -7,6 +7,7 @@ import { Icon } from '../components/ui/Icon';
 import { Modal } from '../components/ui/Modal';
 import { Select } from '../components/ui/Field';
 import { REPORTS, singleSystemAuditPack } from '../lib/reports';
+import { CSV_EXPORTS } from '../lib/csv';
 import { downloadText, slugify } from '../lib/download';
 
 export function ReportsPage() {
@@ -97,6 +98,32 @@ export function ReportsPage() {
               <Icon name="download" size={13} /> Download pack
             </Button>
           </div>
+        </div>
+      </Card>
+
+      <Card className="mt-6 p-5">
+        <div className="flex items-start gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ok/15 text-ok">
+            <Icon name="download" size={16} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-ink">CSV exports</h3>
+            <p className="mt-0.5 text-xs text-faint">
+              Export key tables as CSV for spreadsheets. (CSV import is on the roadmap; use JSON backup for round-trips.)
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {CSV_EXPORTS.map((c) => (
+            <Button
+              key={c.id}
+              size="sm"
+              variant="secondary"
+              onClick={() => downloadText(`${c.id}.csv`, c.generate(data), 'text/csv')}
+            >
+              <Icon name="download" size={13} /> {c.title}
+            </Button>
+          ))}
         </div>
       </Card>
 

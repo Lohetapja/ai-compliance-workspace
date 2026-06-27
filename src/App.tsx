@@ -18,6 +18,8 @@ import { FrameworkLensesPage } from './pages/FrameworkLensesPage';
 import { UseCaseIntakePage } from './pages/UseCaseIntakePage';
 import { VendorRegisterPage } from './pages/VendorRegisterPage';
 import { ResearchSourcesPage } from './pages/ResearchSourcesPage';
+import { ReviewQueuePage } from './pages/ReviewQueuePage';
+import { OwnersPage } from './pages/OwnersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AboutProjectPage } from './pages/AboutProjectPage';
 
@@ -57,6 +59,8 @@ export function App() {
           <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/framework-lenses" element={<FrameworkLensesPage />} />
+          <Route path="/review-queue" element={<ReviewQueuePage />} />
+          <Route path="/owners" element={<OwnersPage />} />
           <Route path="/frameworks" element={<FrameworksPage />} />
           <Route path="/research" element={<ResearchSourcesPage />} />
           <Route path="/settings" element={<SettingsPage />} />

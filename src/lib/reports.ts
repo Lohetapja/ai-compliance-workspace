@@ -7,6 +7,7 @@ import { formatDate, relativeReview } from './dates';
 import { systemCoverage, systemGaps, workspaceCoverage, COVERAGE_DISCLAIMER } from './coverage';
 import { dashboardStats, reviewItems, isOpenRisk } from './selectors';
 import {
+  AI_SECURITY_CATEGORIES,
   aiActBuckets,
   auditEvidenceBuckets,
   gdprSystems,
@@ -521,7 +522,21 @@ export function frameworkLensSummaryReport(data: WorkspaceData): string {
     [...buckets.missing, ...buckets.expired].map((e) => [e.evidenceTitle, e.evidenceType, e.owner || '—', e.status])
   );
 
-  out += '\n' + h('7. Disclaimer', 2);
+  out += '\n' + h('7. Vendor risk', 2);
+  out += table(
+    ['Vendor', 'Dependency', 'Privacy', 'Security', 'DPA'],
+    (data.vendors ?? []).map((v) => [v.vendorName, v.vendorDependencyRisk, v.privacyReviewStatus, v.securityReviewStatus, v.dpaStatus])
+  );
+
+  out += '\n' + h('8. Management summary', 2);
+  const stats = dashboardStats(data);
+  out += list([
+    `Active AI systems: **${stats.totalSystems}** · possible high-risk: **${stats.possibleHighRisk}**`,
+    `Open high/critical risks: **${stats.openHighRisks + stats.openCriticalRisks}** · open incidents: **${stats.openIncidents}**`,
+    `Overdue reviews: **${stats.overdueReviews}** · audit-readiness evidence coverage: **${stats.coveragePct}%**`,
+  ]);
+
+  out += '\n' + h('9. Disclaimer', 2);
   out += `${DISCLAIMER}\n`;
   return out;
 }
@@ -612,6 +627,82 @@ export function openActionsReport(data: WorkspaceData): string {
   return out;
 }
 
+/* ------------------------------------------------------------------ */
+/* 11. GDPR-Relevant Privacy Review Summary                            */
+/* ------------------------------------------------------------------ */
+
+export function gdprPrivacyReviewSummaryReport(data: WorkspaceData): string {
+  const systems = gdprSystems(data);
+  let out = h('GDPR-Relevant Privacy Review Summary') + meta(data, 'GDPR-Relevant Privacy Review Summary') + '\n';
+  out += '> GDPR-relevant privacy review view. High-level organization only — not legal advice or a privacy determination.\n\n';
+
+  out += h('Systems processing personal / sensitive data', 2);
+  out += table(
+    ['System', 'Personal', 'Sensitive', 'Automated decision', 'DPIA', 'Privacy review'],
+    systems.map((s) => [
+      s.systemName,
+      s.personalDataInvolved,
+      s.sensitiveDataInvolved,
+      s.automatedDecisionConcern ? 'concern' : 'no',
+      s.dpiaStatus ?? '—',
+      s.privacyReviewNeeded ? 'recommended' : 'not flagged',
+    ])
+  );
+
+  out += '\n' + h('Processing details', 2);
+  for (const s of systems) {
+    out += `\n### ${s.systemName}\n`;
+    out += list([
+      `Data subjects: ${s.dataSubjects || '—'}`,
+      `Data categories: ${s.personalDataCategories || '—'}`,
+      `Purpose: ${s.businessPurpose || '—'}`,
+      `Recipients / vendors: ${s.recipientsOrVendors || s.vendorOrProvider || '—'}`,
+      `Retention note: ${s.retentionPeriod || '—'}`,
+      `International transfer: ${s.internationalTransferFlag ? 'yes' : 'no / unknown'}`,
+    ]);
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* 12. AI Security Risk Summary                                        */
+/* ------------------------------------------------------------------ */
+
+export function aiSecurityRiskSummaryReport(data: WorkspaceData): string {
+  const risks = securityRelevantRisks(data);
+  let out = h('AI Security Risk Summary') + meta(data, 'AI Security Risk Summary') + '\n';
+  out += '> AI security risks inspired by OWASP LLM Top 10 / MITRE ATLAS. Indicative organization only.\n\n';
+
+  out += h('Risk areas (reference)', 2);
+  out += list(AI_SECURITY_CATEGORIES.map((c) => `**${c.name}** — ${c.hint}`));
+
+  out += '\n' + h('Security-relevant risks', 2);
+  out += table(
+    ['Risk', 'System', 'Severity', 'Status', 'Controls', 'Evidence', 'Owner'],
+    risks.map((r) => [
+      r.riskTitle,
+      systemName(data, r.affectedAISystemId),
+      r.severity,
+      r.status,
+      String(r.linkedControlIds.length),
+      String(r.linkedEvidenceIds.length),
+      r.owner || '—',
+    ])
+  );
+
+  const incidents = data.incidents.filter((i) =>
+    risks.some((r) => i.relatedRiskIds.includes(r.id))
+  );
+  if (incidents.length) {
+    out += '\n' + h('Related incidents', 2);
+    out += table(
+      ['Incident', 'System', 'Severity', 'Status'],
+      incidents.map((i) => [i.incidentTitle, systemName(data, i.affectedAISystemId), i.severity, i.status])
+    );
+  }
+  return out;
+}
+
 export interface ReportDef {
   id: string;
   title: string;
@@ -673,5 +764,17 @@ export const REPORTS: ReportDef[] = [
     title: 'Open Actions',
     description: 'Open gap actions, overdue reviews, open high/critical risks, incidents, and pending intake.',
     generate: openActionsReport,
+  },
+  {
+    id: 'gdpr-privacy-summary',
+    title: 'GDPR-Relevant Privacy Review Summary',
+    description: 'Systems with personal/sensitive data: data subjects, categories, retention, DPIA status.',
+    generate: gdprPrivacyReviewSummaryReport,
+  },
+  {
+    id: 'ai-security-summary',
+    title: 'AI Security Risk Summary',
+    description: 'AI security risks inspired by OWASP LLM Top 10 / MITRE ATLAS, with linked controls and incidents.',
+    generate: aiSecurityRiskSummaryReport,
   },
 ];

@@ -85,15 +85,23 @@ export function AboutProjectPage() {
               <li>• Policy enforcement</li>
               <li>• Enterprise integrations</li>
               <li>• Authentication / authorization</li>
-              <li>• Real audit certification</li>
+              <li>• Collaboration workflows</li>
+              <li>• Immutable audit logs</li>
+              <li>• Real evidence attachments</li>
               <li>• Legal compliance determination</li>
+              <li>• Certification workflows</li>
+              <li>• Official framework content libraries</li>
             </ul>
           </div>
           <div className="rounded-lg border border-border bg-panel-2 p-3 text-xs leading-relaxed text-muted">
-            It is a local-first portfolio project focused on <span className="text-ink">structure, workflow,
-            evidence, and learning</span>. The goal is to show how AI governance records connect — what systems
-            exist, who owns them, what risks they create, what controls and evidence support them, and what
-            needs review — without pretending to automate legal or security judgement.
+            <p>
+              This is a local-first portfolio and learning project focused on <span className="text-ink">structure,
+              workflow, evidence, and audit-preparation thinking</span>.
+            </p>
+            <p className="mt-2">
+              Enterprise tools such as AI governance/GRC platforms usually provide integrations, automation,
+              collaboration, monitoring, and formal audit workflows. This project is not a replacement for those tools.
+            </p>
           </div>
         </div>
       </Card>

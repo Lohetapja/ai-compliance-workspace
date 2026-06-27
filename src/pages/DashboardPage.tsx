@@ -30,6 +30,10 @@ export function DashboardPage() {
   const reviews = reviewItems(data);
   const attention = reviews.filter((r) => r.state === 'overdue' || r.state === 'due-7').slice(0, 8);
   const attentionSystems = systemsNeedingAttention(data);
+  const active = data.systems.filter((s) => s.currentStatus !== 'archived');
+  const missingOversight = active.filter((s) => !s.humanOversightOwner && s.autonomyLevel !== 'advisory').length;
+  const missingLogging = active.filter((s) => s.loggingEnabled !== 'yes').length;
+  const missingAuditTrail = active.filter((s) => s.auditTrailAvailable !== 'yes').length;
 
   if (stats.totalSystems === 0) {
     return (
@@ -151,6 +155,59 @@ export function DashboardPage() {
           ))}
         </div>
       </Card>
+
+      {/* Oversight / logging / audit-trail gaps */}
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <StatCard label="Systems missing human oversight" value={missingOversight} tone={missingOversight ? 'warn' : 'ok'} to="/systems" />
+        <StatCard label="Systems missing logging" value={missingLogging} tone={missingLogging ? 'warn' : 'ok'} to="/systems" />
+        <StatCard label="Systems missing audit trail" value={missingAuditTrail} tone={missingAuditTrail ? 'warn' : 'ok'} to="/systems" />
+      </div>
+
+      {/* What to do next + Suggested walkthrough */}
+      <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader title="What to do next" subtitle="Practical next steps for this workspace" />
+          <div className="flex flex-col gap-2 p-4">
+            {[
+              { to: '/review-queue', label: 'Review overdue items', icon: 'clock' as const },
+              { to: '/framework-lenses', label: 'Check framework lenses', icon: 'layers' as const },
+              { to: '/reports', label: 'Generate the Management Overview report', icon: 'report' as const },
+              { to: '/settings', label: 'Export a JSON backup', icon: 'download' as const },
+              { to: '/review-queue', label: 'Open the Review Queue', icon: 'check' as const },
+            ].map((a) => (
+              <Link key={a.label} to={a.to} className="flex items-center gap-2 rounded-lg border border-border bg-panel-2 px-3 py-2 text-sm text-ink hover:border-border-strong hover:bg-elevated">
+                <Icon name={a.icon} size={14} className="text-brand" /> {a.label}
+              </Link>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Suggested demo walkthrough" subtitle="A quick tour of the workspace" actions={<Button size="sm" variant="ghost" onClick={loadSampleData}>Load sample data</Button>} />
+          <ol className="space-y-1.5 p-4 text-sm text-muted">
+            {[
+              { t: 'Load fictional sample data', to: '/settings' },
+              { t: 'Open AI Systems', to: '/systems' },
+              { t: 'Review a customer-facing AI system', to: '/systems' },
+              { t: 'Check its risk flags', to: '/systems' },
+              { t: 'Follow the traceability chain', to: '/systems' },
+              { t: 'Open Framework Lenses', to: '/framework-lenses' },
+              { t: 'Check GDPR or AI Security view', to: '/framework-lenses' },
+              { t: 'Review Evidence Freshness', to: '/controls' },
+              { t: 'Open Gap Actions', to: '/gap-actions' },
+              { t: 'Generate a Single-System Audit Pack', to: '/reports' },
+              { t: 'Export a JSON backup', to: '/settings' },
+            ].map((s, i) => (
+              <li key={i}>
+                <Link to={s.to} className="flex items-start gap-2 hover:text-ink">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/15 text-[11px] font-semibold text-brand">{i + 1}</span>
+                  <span>{s.t}</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      </div>
 
       {/* Middle row */}
       <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
