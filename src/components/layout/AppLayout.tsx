@@ -5,6 +5,7 @@ import { Icon } from '../ui/Icon';
 import { GlobalSearch } from './GlobalSearch';
 import { AutosaveIndicator } from './AutosaveIndicator';
 import { useStore } from '../../store/useStore';
+import { useDashboardPrefs } from '../../store/useDashboardPrefs';
 import { cn } from '../ui/cn';
 
 // Author attribution links.
@@ -101,9 +102,22 @@ function SidebarLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+// Reading-heavy routes keep a readable medium width even at "full".
+const READING_ROUTES = ['/about', '/research'];
+
 export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const workspaceWidth = useDashboardPrefs((s) => s.workspaceWidth);
+
+  const isReading = READING_ROUTES.some((r) => location.pathname.startsWith(r));
+  const widthClass = isReading
+    ? 'max-w-4xl'
+    : workspaceWidth === 'full'
+      ? 'max-w-none'
+      : workspaceWidth === 'wide'
+        ? 'max-w-[1600px]'
+        : 'max-w-7xl';
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -161,7 +175,7 @@ export function AppLayout() {
             key={location.pathname}
             className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8"
           >
-            <div className="mx-auto max-w-7xl">
+            <div className={cn('mx-auto', widthClass)}>
               <Outlet />
             </div>
           </main>

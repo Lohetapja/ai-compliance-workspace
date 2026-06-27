@@ -7,6 +7,7 @@ import { Icon } from '../components/ui/Icon';
 import { Field, Input, Checkbox, Select } from '../components/ui/Field';
 import { downloadJSON } from '../lib/download';
 import { useAppearance, type DefaultLens, type EvidenceWindow, type ReviewWindow } from '../store/useAppearance';
+import { useDashboardPrefs } from '../store/useDashboardPrefs';
 import { FRAMEWORK_LENSES } from '../lib/lenses';
 import { cn } from '../components/ui/cn';
 import type { WorkspaceExport } from '../types';
@@ -245,6 +246,7 @@ export function SettingsPage() {
 function AppearanceCard() {
   const { theme, density, textSize, highContrast, setTheme, setDensity, setTextSize, setHighContrast, reset } =
     useAppearance();
+  const { workspaceWidth, density: dashDensity, setWorkspaceWidth, setDensity: setDashDensity } = useDashboardPrefs();
   return (
     <Card className="mb-4">
       <CardHeader
@@ -287,6 +289,27 @@ function AppearanceCard() {
         <div className="flex items-end pb-1">
           <Checkbox checked={highContrast} onChange={setHighContrast} label="High contrast mode" />
         </div>
+        <Field label="Workspace width" hint="Affects dashboard and table pages. Reading pages stay readable.">
+          <Segmented
+            value={workspaceWidth}
+            onChange={setWorkspaceWidth}
+            options={[
+              { value: 'comfortable', label: 'Comfortable' },
+              { value: 'wide', label: 'Wide' },
+              { value: 'full', label: 'Full' },
+            ]}
+          />
+        </Field>
+        <Field label="Dashboard density">
+          <Segmented
+            value={dashDensity}
+            onChange={setDashDensity}
+            options={[
+              { value: 'comfortable', label: 'Comfortable' },
+              { value: 'compact', label: 'Compact' },
+            ]}
+          />
+        </Field>
       </div>
     </Card>
   );
