@@ -62,7 +62,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: 'Follow the traceability chain',
-    body: 'System → Risks → Controls → Evidence → Decisions → Incidents → Gap Actions → Reports. Click any node to jump to it. This high-level chain is what makes the workspace audit-ready.',
+    body: 'System → Risks → Controls → Evidence → Decisions → Incidents → Gap Actions → Reports. Click any node to jump to it. This high-level chain is the backbone of audit preparation — a connected trail a human reviewer can follow.',
     cta: 'Show the traceability chain',
     icon: 'link',
     to: (id) => `/systems/${id}`,

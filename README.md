@@ -1,13 +1,18 @@
 # AI Compliance Workspace
 
 A practical, browser-based workspace for organizing AI governance, risk,
-evidence, decisions, incidents, and audit-readiness information.
+evidence, decisions, incidents, and audit-preparation information.
 
 **Live demo:** https://lohetapja.github.io/ai-compliance-workspace/
 
+**Start here:** open the live demo and click **“Start guided demo”** on the
+Dashboard. It runs a short 7-step tour through one sample AI system. This is a
+local-first browser demo — it runs entirely in your browser using fictional
+sample data, with no backend and nothing leaving your machine.
+
 AI Compliance Workspace is not a legal compliance engine. It is a practical
 workspace for organizing AI governance, risk, evidence, decisions, incidents,
-and audit-readiness information.
+and audit-preparation information.
 
 ## Purpose
 
@@ -174,7 +179,7 @@ actions) → open a **Framework Lens** (e.g. GDPR or AI Security) → check the
 | Vendor Register | Tracks third-party AI providers, data shared, review statuses, and dependency/exit risk. |
 | Framework Lenses | High-level AI Act / GDPR / ISO/IEC 42001 / NIS2 / AI Security / Audit Evidence / Vendor Risk / Management views — indicative only. |
 | Framework Mapping | Stores high-level notes by framework and requirement area. |
-| Research Sources | Plain-language pointers to learning references (EU AI Act, ISO/IEC 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
+| Research Sources | Official/primary references first (EUR-Lex, European Commission, EU AI Office, EDPB, ENISA, ISO, NIST, OWASP, MITRE ATLAS, AICPA), with non-official convenience sites grouped under background reading. |
 | Review Queue | Time-based queue of what is overdue or due soon across systems, evidence, vendors, risks, controls, gap actions, and intake. |
 | Owners & Responsibilities | A responsibility matrix showing who owns what (based on owner-name strings — no accounts). |
 | Reports | 12 Markdown reports (incl. Framework Lens Summary, Vendor Risk, Open Actions, GDPR Privacy Review, AI Security) + single-system audit packs + CSV exports of key tables. |
@@ -208,6 +213,17 @@ All screenshots use the fictional **Fictional AI Test Company** sample dataset.
 ### AI Systems Inventory
 
 ![AI Systems inventory](assets/screenshots/AISystems.jpg)
+
+### AI System Detail
+
+The main showcase page: summary strip, governance actions, "What to review next" panel, the
+traceability chain, and all linked governance records.
+
+![AI System Detail — summary strip, actions, what to review next, and traceability chain](assets/screenshots/SystemDetail_part1.jpg)
+
+![AI System Detail — overview, privacy/GDPR fields, linked risks, evidence coverage, and open gaps](assets/screenshots/SystemDetail_part2.jpg)
+
+![AI System Detail — linked controls, evidence, decisions, and incidents](assets/screenshots/SystemDetail_part3.jpg)
 
 ### Framework Lenses
 
@@ -345,7 +361,6 @@ This project demonstrates:
 
 Near-term polish:
 
-- Add real screenshots to the README.
 - Continue mobile usability checks.
 - Add more guided empty states and examples.
 - Add focused tests for pure report/risk helper logic.
