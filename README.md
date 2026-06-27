@@ -67,7 +67,7 @@ core review trail connected:
 - Decision Journal
 - Incidents / Issues log
 - Gap Actions (turn review warnings into owned follow-up tasks)
-- **Framework Lenses** — AI Act, ISO 42001, GDPR, NIS2, AI Security, and Audit Evidence views over the same data
+- **Framework Lenses** — AI Act, ISO/IEC 42001, GDPR, NIS2, AI Security, and Audit Evidence views over the same data
 - **Use Case Intake** — lightweight intake/triage for proposed AI use cases, convertible into an AI System record
 - **Vendor Register** — third-party AI providers with contract/privacy/security/DPA review status and dependency risk
 - **Traceability chain** on each AI system (System → Risks → Controls → Evidence → Decisions → Incidents → Reports)
@@ -81,6 +81,53 @@ core review trail connected:
 - Load/reset fictional sample data
 - Local browser storage only
 - Responsive layout for smaller screens
+
+## Recommended Demo Path
+
+1. Open the Dashboard.
+2. Go to AI Systems.
+3. Open a sample AI system.
+4. Follow the traceability chain: risks → controls → evidence → decisions → incidents → gap actions.
+5. Open Framework Lenses and compare the same data through AI Act, GDPR, ISO/IEC 42001, NIS2, AI Security, and Audit Evidence views.
+6. Open the Review Queue to see overdue and due-soon governance work.
+7. Generate a Single-System Audit Pack from the Reports page.
+8. Export a JSON backup from Settings / Data.
+
+## Data Relationship Model
+
+```mermaid
+flowchart LR
+    Intake[Use Case Intake] --> System[AI System]
+    Vendor[Vendor Register] --> System
+    System --> Risks[Risks]
+    Risks --> Controls[Controls]
+    Controls --> Evidence[Evidence]
+    System --> Decisions[Decisions]
+    System --> Incidents[Incidents / Issues]
+    System --> Gaps[Gap Actions]
+    Evidence --> Reports[Reports]
+    Risks --> Reports
+    Controls --> Reports
+    Decisions --> Reports
+    Incidents --> Reports
+    Gaps --> Reports
+```
+
+## Why Not Just a Spreadsheet?
+
+A spreadsheet can track rows.
+
+AI Compliance Workspace is designed to show relationships:
+
+- AI systems linked to risks
+- risks linked to controls
+- controls linked to evidence
+- evidence linked to reports
+- decisions linked to systems and risks
+- incidents linked to follow-up actions
+- framework lenses showing the same records from different review angles
+
+The goal is not to replace enterprise GRC tools. The goal is to make AI governance structure visible in a lightweight, local-first demo.
 
 ## Example workflow
 
@@ -117,9 +164,9 @@ actions) → open a **Framework Lens** (e.g. GDPR or AI Security) → check the
 | Gap Actions | Tracks missing-evidence/review follow-up tasks with owner, severity, due date, and status. |
 | Use Case Intake | Captures proposed AI use cases and the reviews they need; approved intakes convert into AI systems. |
 | Vendor Register | Tracks third-party AI providers, data shared, review statuses, and dependency/exit risk. |
-| Framework Lenses | High-level AI Act / GDPR / ISO 42001 / NIS2 / AI Security / Audit Evidence / Vendor Risk / Management views — indicative only. |
+| Framework Lenses | High-level AI Act / GDPR / ISO/IEC 42001 / NIS2 / AI Security / Audit Evidence / Vendor Risk / Management views — indicative only. |
 | Framework Mapping | Stores high-level notes by framework and requirement area. |
-| Research Sources | Plain-language pointers to learning references (EU AI Act, ISO 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
+| Research Sources | Plain-language pointers to learning references (EU AI Act, ISO/IEC 42001, NIST AI RMF, OWASP LLM Top 10, MITRE ATLAS, GDPR, NIS2, SOC 2). |
 | Review Queue | Time-based queue of what is overdue or due soon across systems, evidence, vendors, risks, controls, gap actions, and intake. |
 | Owners & Responsibilities | A responsibility matrix showing who owns what (based on owner-name strings — no accounts). |
 | Reports | 12 Markdown reports (incl. Framework Lens Summary, Vendor Risk, Open Actions, GDPR Privacy Review, AI Security) + single-system audit packs + CSV exports of key tables. |
@@ -140,24 +187,39 @@ tools.**
 
 ## Screenshots
 
-Screenshots are intentionally left as placeholders until final portfolio captures
-are added under `docs/screenshots/`.
+All screenshots use the fictional **Fictional AI Test Company** sample dataset.
 
-<!-- Screenshot to be added: Dashboard -->
-<!-- Screenshot to be added: AI System Inventory -->
-<!-- Screenshot to be added: AI System Detail -->
-<!-- Screenshot to be added: Risk Helper -->
-<!-- Screenshot to be added: Reports / Audit Pack -->
-<!-- Screenshot to be added: Framework Mapping -->
+### Dashboard
 
-Planned screenshot paths:
+![Dashboard overview](assets/screenshots/Dashboard_part1.jpg)
 
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/ai-systems.png`
-- `docs/screenshots/system-detail.png`
-- `docs/screenshots/risk-helper.png`
-- `docs/screenshots/reports-audit-pack.png`
-- `docs/screenshots/framework-mapping.png`
+![Dashboard continued](assets/screenshots/Dashboard_part2.jpg)
+
+![Dashboard lower sections](assets/screenshots/Dashboard_part3.jpg)
+
+### AI Systems Inventory
+
+![AI Systems inventory](assets/screenshots/AISystems.jpg)
+
+### Framework Lenses
+
+![Framework Lenses](assets/screenshots/FrameworkLenses.jpg)
+
+### Review Queue
+
+![Review Queue](assets/screenshots/ReviewQueue.jpg)
+
+### Reports
+
+![Reports and Audit Pack](assets/screenshots/Reports.jpg)
+
+### Use Case Intake
+
+![Use Case Intake](assets/screenshots/UseCaseIntake.jpg)
+
+### Vendor Register
+
+![Vendor Register](assets/screenshots/VendorRegister.jpg)
 
 ## Data and privacy model
 
