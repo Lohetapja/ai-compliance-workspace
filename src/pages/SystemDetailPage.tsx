@@ -16,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Chip, type Tone } from '../components/ui/Chip';
+import { cn } from '../components/ui/cn';
 import { CoverageMeter } from '../components/ui/CoverageMeter';
 import { InfoTip } from '../components/ui/Tooltip';
 import {
@@ -30,6 +31,7 @@ import {
 } from '../components/ui/statusChips';
 import { formatDate, reviewState } from '../lib/dates';
 import { systemCoverage, systemGaps } from '../lib/coverage';
+import { isOpenRisk } from '../lib/selectors';
 import { singleSystemAuditPack } from '../lib/reports';
 import { downloadText, slugify } from '../lib/download';
 import { blankControl, blankDecision, blankEvidence, blankGapAction, blankIncident, blankRisk } from '../data/factories';
@@ -132,6 +134,20 @@ function TraceArrow() {
   return <span className="text-faint">→</span>;
 }
 
+function scrollToAnchor(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const JUMP_LINKS: { label: string; anchor: string }[] = [
+  { label: 'Risks', anchor: 'panel-risks' },
+  { label: 'Controls', anchor: 'panel-controls' },
+  { label: 'Evidence', anchor: 'panel-evidence' },
+  { label: 'Decisions', anchor: 'panel-decisions' },
+  { label: 'Incidents', anchor: 'panel-incidents' },
+  { label: 'Gap Actions', anchor: 'panel-gaps' },
+  { label: 'Vendors', anchor: 'panel-vendors' },
+];
+
 export function SystemDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -164,6 +180,25 @@ export function SystemDetailPage() {
   const linkedVendors = (data.vendors ?? []).filter((v) => v.linkedAISystemIds.includes(system.id));
   const cov = systemCoverage(system, data);
   const gaps = systemGaps(system, data);
+
+  const openHighRisks = risks.filter((r) => isOpenRisk(r) && (r.severity === 'high' || r.severity === 'critical'));
+  const openIncidents = incidents.filter((i) => i.status !== 'resolved' && i.status !== 'closed');
+  const reviewSt = reviewState(system.nextReviewDate);
+
+  // "What to review next" — prioritised, each row optionally jumps to a section.
+  const reviewNext: { text: string; tone: Tone; anchor?: string }[] = [];
+  if (reviewSt === 'overdue')
+    reviewNext.push({ text: `Review is overdue (was due ${formatDate(system.nextReviewDate)})`, tone: 'danger' });
+  else if (reviewSt === 'none')
+    reviewNext.push({ text: 'No next review date set for this system', tone: 'warn' });
+  if (openHighRisks.length)
+    reviewNext.push({ text: `${openHighRisks.length} open high / critical risk(s)`, tone: 'danger', anchor: 'panel-risks' });
+  for (const t of cov.missingTypes)
+    reviewNext.push({ text: `Missing evidence: ${t}`, tone: 'warn', anchor: 'panel-evidence' });
+  if (openGapActions.length)
+    reviewNext.push({ text: `${openGapActions.length} open gap action(s)`, tone: 'warn', anchor: 'panel-gaps' });
+  if (openIncidents.length)
+    reviewNext.push({ text: `${openIncidents.length} open incident(s) / issue(s)`, tone: 'warn', anchor: 'panel-incidents' });
 
   function clone() {
     const newId = duplicateSystem(system!.id);
@@ -198,12 +233,6 @@ export function SystemDetailPage() {
         description={system.businessPurpose || system.description}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => navigate('/risk-helper', { state: { systemId: system.id } })}>
-              <Icon name="helper" size={14} /> Risk helper
-            </Button>
-            <Button variant="secondary" onClick={auditPack}>
-              <Icon name="download" size={14} /> Audit pack
-            </Button>
             <Button variant="secondary" onClick={() => setModal({ t: 'system', e: system })}>
               <Icon name="edit" size={14} /> Edit
             </Button>
@@ -216,17 +245,94 @@ export function SystemDetailPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SystemStatusChip value={system.currentStatus} />
-        <RiskCategoryChip value={system.riskCategory} />
-        {system.customerFacing && <Chip tone="info">Customer-facing</Chip>}
-        {system.personalDataInvolved === 'yes' && <Chip tone="warn">Personal data</Chip>}
-        {system.sensitiveDataInvolved === 'yes' && <Chip tone="danger">Sensitive data</Chip>}
-        {reviewState(system.nextReviewDate) !== 'none' && <ReviewChip state={reviewState(system.nextReviewDate)} />}
-      </div>
+      {/* Summary strip — at-a-glance facts, governance actions, and jump links */}
+      <Card id="system-summary" className="mb-4 scroll-mt-20">
+        <div className="border-b border-border p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <SystemStatusChip value={system.currentStatus} />
+            <RiskCategoryChip value={system.riskCategory} />
+            {system.customerFacing && <Chip tone="info">Customer-facing</Chip>}
+            {system.personalDataInvolved === 'yes' && <Chip tone="warn">Personal data</Chip>}
+            {system.sensitiveDataInvolved === 'yes' && <Chip tone="danger">Sensitive data</Chip>}
+            {reviewSt !== 'none' && <ReviewChip state={reviewSt} />}
+          </div>
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-6">
+            <Detail label="Owner" value={system.owner} />
+            <Detail label="Business unit" value={system.businessUnit} />
+            <Detail label="Risk band" value={RISK_CATEGORY_LABELS[system.riskCategory]} />
+            <Detail label="Next review" value={formatDate(system.nextReviewDate)} />
+            <Detail label="Review flags" value={flags.length ? String(flags.length) : 'None'} />
+            <Detail label="Vendors" value={String(linkedVendors.length)} />
+          </dl>
+          {flags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {flags.map((f) => <Chip key={f} tone="warn">{f} recommended</Chip>)}
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 p-4">
+          <Button variant="primary" onClick={() => navigate('/risk-helper', { state: { systemId: system.id } })}>
+            <Icon name="helper" size={14} /> Run risk helper
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('/framework-lenses')}>
+            <Icon name="layers" size={14} /> Framework lenses
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('/review-queue')}>
+            <Icon name="clock" size={14} /> Review queue
+          </Button>
+          <Button variant="secondary" onClick={auditPack}>
+            <Icon name="download" size={14} /> Export audit pack
+          </Button>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-4 py-2.5">
+          <span className="mr-1 text-xs font-medium text-faint">Jump to:</span>
+          {JUMP_LINKS.map((j) => (
+            <button
+              key={j.anchor}
+              type="button"
+              onClick={() => scrollToAnchor(j.anchor)}
+              className="rounded-md border border-border bg-panel-2 px-2 py-1 text-xs text-muted hover:border-border-strong hover:text-ink"
+            >
+              {j.label}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* What to review next */}
+      <Card id="review-next" className="mb-4 scroll-mt-20">
+        <CardHeader title="What to review next" subtitle="Prioritised, review-recommended items for this system — not a compliance verdict" />
+        {reviewNext.length === 0 ? (
+          <p className="flex items-center gap-2 px-4 py-4 text-xs text-muted">
+            <Icon name="check" size={14} className="text-ok" />
+            Nothing flagged from the recommended checklist. Keep the review date current.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {reviewNext.map((r, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => r.anchor && scrollToAnchor(r.anchor)}
+                  className={cn(
+                    'flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left',
+                    r.anchor ? 'hover:bg-panel-2' : 'cursor-default'
+                  )}
+                >
+                  <span className="flex items-center gap-2 text-sm text-ink">
+                    <Icon name="warning" size={13} className={r.tone === 'danger' ? 'text-danger' : 'text-warn'} />
+                    {r.text}
+                  </span>
+                  {r.anchor && <span className="shrink-0 text-xs text-brand">View →</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       {/* Traceability chain */}
-      <Card className="mb-4">
+      <Card id="trace-chain" className="mb-4 scroll-mt-20">
         <CardHeader title="Traceability" subtitle="How this system connects to its governance records" />
         <div className="flex flex-wrap items-center gap-1.5 p-4">
           <TraceStep label="AI System" count={1} tone="brand" />
@@ -427,7 +533,7 @@ export function SystemDetailPage() {
             )}
           </Card>
 
-          <Card>
+          <Card id="panel-vendors" className="scroll-mt-20">
             <CardHeader title={`Linked vendors (${linkedVendors.length})`} subtitle="Third-party providers for this system" actions={<Link to="/vendors" className="text-xs text-brand hover:underline">Register →</Link>} />
             {linkedVendors.length === 0 ? (
               <p className="px-4 py-4 text-xs text-faint">No vendors linked. Link providers in the Vendor Register.</p>

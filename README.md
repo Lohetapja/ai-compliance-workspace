@@ -59,8 +59,9 @@ core review trail connected:
 
 ## Features
 
+- **Guided Demo Mode** — a built-in 7-step walkthrough (Dashboard → sample system → risk flags → traceability chain → Framework Lenses → Review Queue → audit pack) with browser-saved progress
 - Dashboard with portfolio, risk, review, and evidence coverage signals
-- AI Systems inventory with detail pages
+- AI Systems inventory with detail pages (summary strip, governance actions, "What to review next", and section jump links)
 - Risk Helper for structured review questions and possible risk areas
 - AI Risk Register
 - Controls & Evidence workspace
@@ -84,13 +85,20 @@ core review trail connected:
 
 ## Recommended Demo Path
 
-1. Open the Dashboard.
-2. Go to AI Systems.
-3. Open a sample AI system.
+**Fastest start:** click **Start guided demo** on the Dashboard. Guided Demo Mode is a
+built-in 7-step walkthrough that opens the sample AI system, points out its risk flags
+and traceability chain, and ends by exporting a single-system audit pack. Progress is
+saved in your browser, and you can exit or restart at any time.
+
+Prefer to explore manually? Follow the same path by hand:
+
+1. Open the Dashboard (note the "Best place to start: Sample AI System" card).
+2. Open the sample AI system and scan its summary strip, actions, and "What to review next" panel.
+3. Review its risk flags (legal / privacy / security / vendor — review-recommended, not legal verdicts).
 4. Follow the traceability chain: risks → controls → evidence → decisions → incidents → gap actions.
 5. Open Framework Lenses and compare the same data through AI Act, GDPR, ISO/IEC 42001, NIS2, AI Security, and Audit Evidence views.
 6. Open the Review Queue to see overdue and due-soon governance work.
-7. Generate a Single-System Audit Pack from the Reports page.
+7. Generate a Single-System Audit Pack from the AI System Detail page or the Reports page.
 8. Export a JSON backup from Settings / Data.
 
 ## Data Relationship Model

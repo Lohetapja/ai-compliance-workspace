@@ -16,6 +16,8 @@ import { ReviewChip } from '../components/ui/statusChips';
 import { formatDate, relativeReview } from '../lib/dates';
 import { cn } from '../components/ui/cn';
 import { DashboardCustomizer } from '../components/DashboardCustomizer';
+import { useGuidedDemo } from '../store/useGuidedDemo';
+import { pickShowcaseSystem } from '../lib/demo';
 import {
   reconcileOrder,
   useDashboardPrefs,
@@ -37,7 +39,10 @@ export function DashboardPage() {
   const data = useStore((s) => s.data);
   const loadSampleData = useStore((s) => s.loadSampleData);
   const prefs = useDashboardPrefs();
+  const startDemo = useGuidedDemo((s) => s.start);
+  const demoActive = useGuidedDemo((s) => s.active);
   const [customizing, setCustomizing] = useState(false);
+  const demoSystem = pickShowcaseSystem(data);
 
   const stats = dashboardStats(data);
   const lens = lensCounts(data);
@@ -358,11 +363,43 @@ export function DashboardPage() {
         title="Dashboard"
         description={`AI governance overview for ${data.organizationName}. Highlights what needs attention before an audit or internal review.`}
         actions={
-          <Button variant="secondary" onClick={() => setCustomizing(true)}>
-            <Icon name="settings" size={14} /> Customize dashboard
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {demoSystem && (
+              <Button variant="primary" onClick={() => startDemo(demoSystem.id)}>
+                <Icon name="helper" size={14} /> {demoActive ? 'Resume guided demo' : 'Start guided demo'}
+              </Button>
+            )}
+            <Button variant="secondary" onClick={() => setCustomizing(true)}>
+              <Icon name="settings" size={14} /> Customize dashboard
+            </Button>
+          </div>
         }
       />
+
+      {demoSystem && (
+        <Card className="mb-4 overflow-hidden border-brand/30 bg-gradient-to-br from-brand/10 to-transparent">
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand">
+                <Icon name="helper" size={13} /> Best place to start
+              </div>
+              <h3 className="mt-1 text-base font-semibold text-ink">Sample AI System: {demoSystem.systemName}</h3>
+              <p className="mt-0.5 text-sm text-muted">
+                Take the 7-step guided tour, or open the sample system directly to see risks,
+                controls, evidence and an exportable audit pack in one place.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button variant="primary" onClick={() => startDemo(demoSystem.id)}>
+                <Icon name="helper" size={14} /> {demoActive ? 'Resume demo' : 'Start guided demo'}
+              </Button>
+              <Link to={`/systems/${demoSystem.id}`}>
+                <Button variant="secondary">Open sample system</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <div className={cn('grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4', gap)} style={{ alignItems: 'start' }}>
         {visible.map((id) => (

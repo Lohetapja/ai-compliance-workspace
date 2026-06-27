@@ -4,6 +4,7 @@ import { NAV_GROUPS } from './nav';
 import { Icon } from '../ui/Icon';
 import { GlobalSearch } from './GlobalSearch';
 import { AutosaveIndicator } from './AutosaveIndicator';
+import { GuidedDemo } from '../GuidedDemo';
 import { useStore } from '../../store/useStore';
 import { useDashboardPrefs } from '../../store/useDashboardPrefs';
 import { cn } from '../ui/cn';
@@ -181,6 +182,7 @@ export function AppLayout() {
           </main>
         </div>
       </div>
+      <GuidedDemo />
     </div>
   );
 }
